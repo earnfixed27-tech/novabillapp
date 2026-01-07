@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="display" content="standalone">
+    <meta name="theme-color" content="#001f3f">
 
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22NovaBillPro%22,%22short_name%22:%22NovaBill%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#001f3f%22,%22theme_color%22:%22#001f3f%22}">
 
@@ -17,34 +17,68 @@
     <style>
         :root { --main: #001f3f; --gold: #c5a059; }
         body { font-family: sans-serif; margin: 0; background: #f0f4f8; height: 100vh; overflow: hidden; }
-        .header { background: var(--main); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--gold); padding-top: env(safe-area-inset-top); }
         #loginScreen { position: fixed; inset: 0; background: var(--main); display: flex; justify-content: center; align-items: center; z-index: 10000; }
         .login-box { background: white; padding: 30px; border-radius: 20px; width: 280px; text-align: center; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; background: var(--main); color: white; cursor: pointer; text-transform: uppercase; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; background: var(--main); color: white; cursor: pointer; }
+        
+        /* Install Popup Style */
+        #installToast { display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 10002; border-left: 5px solid var(--gold); }
     </style>
 </head>
 <body>
 
+<div id="installToast">
+    <div style="font-weight:bold; color:var(--main);">Install NovaBill Pro?</div>
+    <div style="font-size:12px; margin-bottom:10px;">Ya software la 'Lite App' sarkhe vapnya sathi install kara.</div>
+    <div style="display:flex; gap:10px;">
+        <button onclick="triggerInstall()" style="background:var(--main); color:white; border:none; padding:8px 15px; border-radius:5px;">INSTALL NOW</button>
+        <button onclick="hideToast()" style="background:#eee; border:none; padding:8px 15px; border-radius:5px;">LATER</button>
+    </div>
+</div>
+
 <div id="loginScreen">
     <div class="login-box">
         <h2 style="color:var(--main)">OWNER LOGIN</h2>
-        <input type="text" id="user" placeholder="Shop ID" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc;">
-        <input type="password" id="pass" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc;">
-        <button class="btn" onclick="handleLogin()">Login & Install App</button>
+        <input type="text" id="user" placeholder="Shop ID" style="width:100%; padding:10px; margin-bottom:10px;">
+        <input type="password" id="pass" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px;">
+        <button class="btn" onclick="handleLogin()">Login & Start</button>
     </div>
 </div>
 
 <div id="mainApp" style="display:none; flex-direction:column; height:100vh;">
-    <div class="header">
-        <h1 id="shopDisp" style="margin:0; font-size: 20px;">SHOP NAME</h1>
+    <div style="background:var(--main); color:white; padding:20px; text-align:center;">
+        <h1 id="shopDisp" style="margin:0; font-size:20px;">SHOP NAME</h1>
     </div>
-    <div style="padding:20px; flex:1; overflow-y:auto;">
-        <h3>Add to Home Screen kelya nantar link disnar nahi!</h3>
-        </div>
+    <div style="padding:20px; text-align:center;">
+        <h3>PWA Standalone Mode Active</h3>
+        <p>Ata link kadhich disnar nahi.</p>
+    </div>
 </div>
 
 <script>
-    // Service Worker Trick (Browser la App banvnyasathi majbur karnyasathi)
+    let deferredPrompt;
+    const installToast = document.getElementById('installToast');
+
+    // Browser la Install sathi trigger karne
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        // Software open kelya kelya popup dakhva
+        setTimeout(() => { installToast.style.display = 'block'; }, 2000);
+    });
+
+    async function triggerInstall() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') { installToast.style.display = 'none'; }
+            deferredPrompt = null;
+        }
+    }
+
+    function hideToast() { installToast.style.display = 'none'; }
+
+    // Service Worker Logic
     if ('serviceWorker' in navigator) {
         const sw = 'self.addEventListener("fetch", (e) => { e.respondWith(fetch(e.request)); });';
         const blob = new Blob([sw], { type: 'text/javascript' });
