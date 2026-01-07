@@ -4,112 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#001f3f">
     
     <title>Nova Bill Pro</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-    
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22NovaBillPro%22,%22short_name%22:%22NovaBill%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#001f3f%22,%22theme_color%22:%22#001f3f%22}">
+
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22NovaBillPro%22,%22short_name%22:%22NovaBill%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#001f3f%22,%22theme_color%22:%22#001f3f%22}">
 
     <style>
-        :root { --main: #001f3f; --gold: #c5a059; --red: #d90429; --green: #2b9348; --bg: #f0f4f8; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); height: 100vh; width: 100vw; overflow-x: hidden; }
+        :root { --main: #001f3f; --gold: #c5a059; --bg: #f0f4f8; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); height: 100vh; width: 100vw; overflow: hidden; }
         
-        /* App Layout */
-        .header { background: var(--main); color: white; padding: 25px 15px; text-align: center; border-bottom: 5px solid var(--gold); padding-top: calc(10px + env(safe-area-inset-top)); }
+        /* Full Screen Layout */
         #loginScreen { position: fixed; inset: 0; background: var(--main); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-box { background: white; padding: 30px; border-radius: 20px; width: 80%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .login-box { background: white; padding: 30px; border-radius: 20px; width: 80%; max-width: 320px; text-align: center; }
         
-        #mainApp { display: none; }
-        .container { padding: 15px; max-width: 800px; margin: auto; }
+        #mainApp { display: none; height: 100vh; overflow-y: auto; }
+        .header { background: var(--main); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--gold); padding-top: env(safe-area-inset-top); }
+        
+        .container { padding: 15px; padding-bottom: 100px; }
         .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         
-        input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; margin-bottom: 12px; box-sizing: border-box; font-size: 14px; outline: none; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; background: var(--main); color: white; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; margin-bottom: 12px; box-sizing: border-box; font-size: 14px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; background: var(--main); color: white; text-transform: uppercase; }
         
         .tab-nav { display: flex; gap: 10px; margin-bottom: 15px; }
         .tab-btn { flex: 1; padding: 12px; border: none; background: #ddd; border-radius: 8px; font-weight: bold; }
         .tab-btn.active { background: var(--main); color: white; }
-        .ledger-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; border-left: 5px solid var(--red); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
 <div id="loginScreen">
     <div class="login-box">
-        <h2 style="color:var(--main); margin-bottom:20px;">STORE LOGIN</h2>
-        <input type="text" id="user" placeholder="Shop ID">
-        <input type="password" id="pass" placeholder="Password">
-        <button class="btn" onclick="handleLogin()">Login & Save App</button>
+        <h2 style="color:var(--main)">STORE LOGIN</h2>
+        <input type="text" id="user" placeholder="Shop ID (nova1)">
+        <input type="password" id="pass" placeholder="Password (nova123)">
+        <button class="btn" onclick="handleLogin()">Login & Install</button>
     </div>
 </div>
 
 <div id="mainApp">
     <div class="header">
-        <h1 id="displayShopName" style="margin:0; font-size: 22px;">SHOP NAME</h1>
-        <div id="liveClock" style="font-size: 12px; color: var(--gold); margin-top: 5px;"></div>
+        <h1 id="displayShopName" style="margin:0; font-size: 20px;">SHOP NAME</h1>
+        <div id="liveClock" style="font-size: 11px; color: var(--gold);"></div>
     </div>
-
     <div class="container">
         <div class="tab-nav">
-            <button class="tab-btn active" id="tab1" onclick="switchTab('billing')">New Bill</button>
-            <button class="tab-btn" id="tab2" onclick="switchTab('ledger')">EMI Ledger</button>
+            <button class="tab-btn active" id="tab1" onclick="switchTab('billing')">Billing</button>
+            <button class="tab-btn" id="tab2" onclick="switchTab('ledger')">History</button>
         </div>
-
         <div id="billingPage">
             <div class="card">
                 <input type="text" id="cName" placeholder="Customer Name">
                 <input type="number" id="cPhone" placeholder="WhatsApp Number">
-                <textarea id="cAddress" placeholder="Customer Address" rows="2"></textarea>
-                <div style="display:flex; gap:10px;">
-                    <select id="brand"><option>Samsung</option><option>iPhone</option><option>Vivo</option><option>Oppo</option></select>
-                    <input type="text" id="model" placeholder="Model Name">
-                </div>
-                <input type="text" id="imei" placeholder="IMEI / Serial Number">
-                <input type="number" id="mrp" placeholder="Final Price (₹)" onkeyup="calc()">
-                <input type="number" id="paid" placeholder="Advance Paid (₹)" onkeyup="calc()">
-                <div style="text-align:center; padding:10px; font-weight:bold; color:var(--red);">Pending: ₹<span id="pAmt">0</span></div>
-                <button class="btn" onclick="saveBill()">Save & Print Pro Bill</button>
+                <textarea id="cAddr" placeholder="Full Address" rows="2"></textarea>
+                <input type="text" id="model" placeholder="Device Model & IMEI">
+                <input type="number" id="mrp" placeholder="Price (₹)">
+                <input type="number" id="paid" placeholder="Advance (₹)">
+                <button class="btn" onclick="save()">Save & Print</button>
             </div>
         </div>
-
-        <div id="ledgerPage" style="display:none;">
-            <input type="text" id="search" placeholder="Search customer..." onkeyup="loadLedger()">
-            <div id="ledgerList"></div>
-        </div>
+        <div id="ledgerPage" style="display:none;"><div id="ledgerList"></div></div>
     </div>
 </div>
 
 <script>
-    // --- BACKEND SHOP CONFIG ---
-    const stores = {
-        "nova1": { 
-            name: "NOVA DIGITAL WORLD", 
-            pass: "nova123", 
-            addr: "Shop No. 12, Main Market, Mumbai", 
-            contact: "+91 9876543210", 
-            ig: "novadigital_official" 
-        }
-    };
+    // Service Worker Register (Lite APK Jugad)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('data:text/javascript,self.addEventListener("fetch", (e) => { e.respondWith(fetch(e.request)); });');
+    }
 
+    const stores = { "nova1": { name: "NOVA DIGITAL WORLD", pass: "nova123", addr: "Mumbai, India", contact: "9876543210", ig: "novadigital" } };
     let currentUser = null;
-
-    window.onload = () => {
-        const session = localStorage.getItem('app_session');
-        if(session && stores[session]) login(session);
-    };
 
     function handleLogin() {
         let u = document.getElementById('user').value;
         let p = document.getElementById('pass').value;
-        if(stores[u] && stores[u].pass === p) {
-            localStorage.setItem('app_session', u);
-            login(u);
-        } else { alert("Invalid ID/Password"); }
+        if(stores[u] && stores[u].pass === p) { localStorage.setItem('session', u); login(u); }
+        else { alert("Wrong ID/Pass"); }
     }
 
     function login(u) {
@@ -120,92 +98,37 @@
         setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleString(); }, 1000);
     }
 
-    function calc() {
-        let m = parseFloat(document.getElementById('mrp').value) || 0;
-        let p = parseFloat(document.getElementById('paid').value) || 0;
-        document.getElementById('pAmt').innerText = (m - p).toFixed(0);
-    }
-
     function switchTab(t) {
         document.getElementById('billingPage').style.display = (t === 'billing' ? 'block' : 'none');
         document.getElementById('ledgerPage').style.display = (t === 'ledger' ? 'block' : 'none');
-        document.getElementById('tab1').classList.toggle('active', t === 'billing');
-        document.getElementById('tab2').classList.toggle('active', t === 'ledger');
-        if(t === 'ledger') loadLedger();
     }
 
-    function saveBill() {
-        let data = {
-            id: Date.now(),
-            name: document.getElementById('cName').value,
-            phone: document.getElementById('cPhone').value,
-            addr: document.getElementById('cAddress').value,
-            brand: document.getElementById('brand').value,
-            model: document.getElementById('model').value,
-            imei: document.getElementById('imei').value,
-            net: parseFloat(document.getElementById('mrp').value) || 0,
-            paid: parseFloat(document.getElementById('paid').value) || 0,
-            date: new Date().toLocaleString()
-        };
-        if(!data.name || !data.net) return alert("Fill Name and Price!");
-        let db = JSON.parse(localStorage.getItem("db_" + currentUser)) || [];
-        db.push(data);
-        localStorage.setItem("db_" + currentUser, JSON.stringify(db));
-        printPDF(data);
-    }
-
-    async function printPDF(c) {
+    async function save() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         let shop = stores[currentUser];
-        let bal = c.net - c.paid;
+        let name = document.getElementById('cName').value;
 
-        // Header & Watermark
-        doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 45, 'F');
-        doc.setTextColor(240); doc.setFontSize(45); doc.text(shop.name, 35, 150, {angle:45, opacity:0.1});
+        // --- Watermark (Pura Beech mein Teda) ---
+        doc.setTextColor(230, 230, 230); // Light Grey
+        doc.setFontSize(50);
+        doc.text(shop.name, 105, 150, { align: 'center', angle: 45 }); // Beech mein teda
         
-        doc.setTextColor(197, 160, 89); doc.setFontSize(22); doc.text(shop.name, 105, 20, {align: 'center'});
-        doc.setTextColor(255); doc.setFontSize(9); doc.text(shop.addr + " | " + shop.contact, 105, 30, {align: 'center'});
+        // --- Header ---
+        doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(197, 160, 89); doc.setFontSize(22); doc.text(shop.name, 105, 18, {align: 'center'});
+        doc.setTextColor(255); doc.setFontSize(10); doc.text(shop.addr + " | " + shop.contact, 105, 28, {align: 'center'});
 
-        doc.setTextColor(0); doc.setFontSize(10);
-        doc.text(`Date: ${c.date}`, 20, 55);
-        doc.text(`Customer: ${c.name} (${c.phone})`, 20, 65);
-        doc.text(`Device: ${c.brand} ${c.model}`, 20, 75);
-        doc.text(`IMEI: ${c.imei}`, 20, 85);
-
-        // Status Box
-        doc.setLineWidth(1);
-        if(bal <= 0) { doc.setDrawColor(43, 147, 72); doc.setTextColor(43, 147, 72); doc.rect(140, 50, 50, 15); doc.text("SUCCESS PAID", 148, 60); }
-        else { doc.setDrawColor(217, 4, 41); doc.setTextColor(217, 4, 41); doc.rect(140, 50, 50, 15); doc.text("EMI PENDING", 148, 60); }
-
-        // Calculation
-        doc.setTextColor(0); doc.setFillColor(245); doc.rect(20, 100, 170, 35, 'F');
-        doc.text(`Total Bill: Rs. ${c.net}`, 25, 110);
-        doc.text(`Received: Rs. ${c.paid}`, 25, 120);
-        doc.setFontSize(13); doc.text(`BALANCE: Rs. ${bal}`, 25, 130);
-
-        // QR Code
-        let qrBox = document.createElement('div');
-        new QRCode(qrBox, { text: "https://instagram.com/"+shop.ig, width: 80, height: 80 });
-        setTimeout(() => {
-            let img = qrBox.querySelector('canvas').toDataURL("image/png");
-            doc.addImage(img, 'PNG', 150, 200, 40, 40);
-            doc.setFontSize(8); doc.text("Follow us on Instagram", 148, 245);
-            doc.save(c.name + "_Bill.pdf");
-        }, 500);
+        // --- Bill Content ---
+        doc.setTextColor(0); doc.setFontSize(12);
+        doc.text(`Customer: ${name}`, 20, 60);
+        doc.text(`Device: ${document.getElementById('model').value}`, 20, 70);
+        doc.text(`Price: Rs. ${document.getElementById('mrp').value}`, 20, 80);
+        
+        doc.save(name + "_Bill.pdf");
     }
 
-    function loadLedger() {
-        let db = JSON.parse(localStorage.getItem("db_" + currentUser)) || [];
-        let list = document.getElementById('ledgerList'); list.innerHTML = "";
-        db.reverse().forEach(c => {
-            let bal = c.net - c.paid;
-            list.innerHTML += `<div class="ledger-item" style="border-left-color:${bal<=0?'var(--green)':'var(--red)'}">
-                <div><b>${c.name}</b><br><small>${c.model}</small></div>
-                <div style="text-align:right"><b>₹${bal}</b></div>
-            </div>`;
-        });
-    }
+    window.onload = () => { if(localStorage.getItem('session')) login(localStorage.getItem('session')); };
 </script>
 </body>
 </html>
