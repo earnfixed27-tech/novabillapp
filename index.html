@@ -4,34 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NovaBill">
+    
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#001f3f">
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22NovaBillPro%22,%22short_name%22:%22NovaBill%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#001f3f%22,%22theme_color%22:%22#001f3f%22}">
+
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Nova Bill Pro%22,%22short_name%22:%22NovaBill%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22orientation%22:%22portrait%22,%22background_color%22:%22#001f3f%22,%22theme_color%22:%22#001f3f%22}">
 
     <title>Nova Bill Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 
     <style>
-        :root { --main: #001f3f; --gold: #c5a059; --red: #d00000; --green: #1b4332; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; height: 100vh; width: 100vw; overflow-x: hidden; }
-        #loginScreen { position: fixed; inset: 0; background: var(--main); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-box { background: white; padding: 30px; border-radius: 20px; width: 300px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #mainApp { display: none; }
+        :root { --main: #001f3f; --gold: #c5a059; }
+        body { font-family: sans-serif; margin: 0; background: #f0f4f8; height: 100vh; width: 100vw; overflow: hidden; }
         .header { background: var(--main); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--gold); padding-top: env(safe-area-inset-top); }
-        .container { max-width: 800px; margin: auto; padding: 15px; }
-        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; color: white; }
-        .btn-blue { background: var(--main); }
-        .btn-green { background: #2d6a4f; }
-        .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; background: #ddd; border-radius: 8px; cursor: pointer; }
-        .tab-btn.active { background: var(--main); color: white; }
-        .ledger-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; border-left: 6px solid #ddd; }
-        #emiModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10001; padding:20px; }
+        #loginScreen { position: fixed; inset: 0; background: var(--main); display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        .login-box { background: white; padding: 30px; border-radius: 20px; width: 280px; text-align: center; }
+        #mainApp { display: none; height: 100vh; flex-direction: column; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; background: var(--main); color: white; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -39,142 +31,45 @@
 <div id="loginScreen">
     <div class="login-box">
         <h2 style="color:var(--main)">OWNER LOGIN</h2>
-        <input type="text" id="user" placeholder="Shop ID">
-        <input type="password" id="pass" placeholder="Password">
-        <button class="btn btn-blue" onclick="handleLogin()">Login & Install App</button>
+        <input type="text" id="user" placeholder="Shop ID" style="width:100%; padding:10px; margin-bottom:10px;">
+        <input type="password" id="pass" placeholder="Password" style="width:100%; padding:10px; margin-bottom:10px;">
+        <button class="btn" onclick="handleLogin()">LOGIN & INSTALL</button>
     </div>
 </div>
 
 <div id="mainApp">
     <div class="header">
         <h1 id="shopDisp" style="margin:0; font-size: 20px;">SHOP NAME</h1>
-        <div id="liveClock" style="font-size: 11px; color: var(--gold); margin-top:5px;"></div>
     </div>
-    <div class="container">
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <button class="tab-btn active" id="tab1" onclick="switchTab('billing')">New Bill</button>
-            <button class="tab-btn" id="tab2" onclick="switchTab('ledger')">EMI Ledger</button>
-        </div>
-        <div id="billingPage">
-            <div class="card">
-                <input type="text" id="cName" placeholder="Customer Name">
-                <input type="number" id="cPhone" placeholder="WhatsApp Number">
-                <textarea id="cAddress" placeholder="Customer Address"></textarea>
-                <div class="grid">
-                    <input type="text" id="model" placeholder="Model Name">
-                    <input type="text" id="imei" placeholder="IMEI Number">
-                </div>
-                <div class="grid">
-                    <input type="number" id="total" placeholder="Total Price (₹)" onkeyup="updateBal()">
-                    <input type="number" id="advance" placeholder="Advance Paid (₹)" onkeyup="updateBal()">
-                </div>
-                <div style="text-align:center; font-weight:bold; color:var(--red); margin:10px 0;">Remaining: ₹<span id="rem">0</span></div>
-                <button class="btn btn-blue" onclick="save()">Print & Save Invoice</button>
-            </div>
-        </div>
-        <div id="ledgerPage" style="display:none;">
-            <input type="text" id="search" placeholder="Search customer..." onkeyup="loadLedger()" style="margin-bottom:15px;">
-            <div id="ledgerList"></div>
-        </div>
-    </div>
-</div>
-
-<div id="emiModal">
-    <div class="card" style="max-width:400px; margin:50px auto;">
-        <h2 id="modalName">Update Payment</h2>
-        <div id="hist" style="max-height:150px; overflow-y:auto; font-size:13px; margin-bottom:15px;"></div>
-        <input type="number" id="newPay" placeholder="Add Amount (₹)">
-        <button class="btn btn-green" onclick="addPayment()">Add Payment</button>
-        <button class="btn btn-blue" onclick="document.getElementById('emiModal').style.display='none'" style="margin-top:10px;">Close</button>
+    <div style="padding: 20px;">
+        <p>Aataa link nahi disnaar! Ekda icon varun open kara.</p>
+        <button class="btn" onclick="localStorage.clear(); location.reload();">LOGOUT</button>
     </div>
 </div>
 
 <script>
+    // Service Worker Trick
     if ('serviceWorker' in navigator) {
         const sw = 'self.addEventListener("fetch", (e) => { e.respondWith(fetch(e.request)); });';
         const blob = new Blob([sw], { type: 'text/javascript' });
         navigator.serviceWorker.register(URL.createObjectURL(blob));
     }
 
-    const stores = { "nova1": { name: "NOVA DIGITAL STORE", pass: "nova123", addr: "Main Road, Maharashtra", contacts: "9876543210 / 8877665544", ig: "novadigital_official" } };
-    let currentUser = null, activeCustId = null;
-
-    window.onload = () => { if(localStorage.getItem('app_session')) login(localStorage.getItem('app_session')); };
+    const stores = { "nova1": { name: "NOVA DIGITAL WORLD", pass: "nova123" } };
 
     function handleLogin() {
         let u = document.getElementById('user').value, p = document.getElementById('pass').value;
-        if(stores[u] && stores[u].pass === p) { localStorage.setItem('app_session', u); login(u); } else { alert("Wrong ID/Pass"); }
+        if(stores[u] && stores[u].pass === p) { localStorage.setItem('session', u); login(u); } 
+        else { alert("Wrong ID/Pass"); }
     }
 
     function login(u) {
-        currentUser = u; document.getElementById('loginScreen').style.display = 'none'; document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
         document.getElementById('shopDisp').innerText = stores[u].name;
-        setInterval(() => { document.getElementById('liveClock').innerText = new Date().toLocaleString(); }, 1000);
     }
 
-    function updateBal() {
-        let t = parseFloat(document.getElementById('total').value) || 0, a = parseFloat(document.getElementById('advance').value) || 0;
-        document.getElementById('rem').innerText = (t - a).toFixed(0);
-    }
-
-    function switchTab(t) {
-        document.getElementById('billingPage').style.display = (t === 'billing' ? 'block' : 'none');
-        document.getElementById('ledgerPage').style.display = (t === 'ledger' ? 'block' : 'none');
-        document.getElementById('tab1').classList.toggle('active', t === 'billing');
-        document.getElementById('tab2').classList.toggle('active', t === 'ledger');
-        if(t === 'ledger') loadLedger();
-    }
-
-    function save() {
-        let data = { id: Date.now(), name: document.getElementById('cName').value, phone: document.getElementById('cPhone').value, addr: document.getElementById('cAddress').value, model: document.getElementById('model').value, imei: document.getElementById('imei').value, total: parseFloat(document.getElementById('total').value) || 0, payments: [{amt: parseFloat(document.getElementById('advance').value) || 0, date: new Date().toLocaleString()}], date: new Date().toLocaleString() };
-        if(!data.name || !data.total) return alert("Fill Name and Total Price!");
-        let db = JSON.parse(localStorage.getItem("db_" + currentUser)) || []; db.push(data);
-        localStorage.setItem("db_" + currentUser, JSON.stringify(db)); printPDF(data);
-    }
-
-    function loadLedger() {
-        let db = JSON.parse(localStorage.getItem("db_" + currentUser)) || [], search = document.getElementById('search').value.toLowerCase(), list = document.getElementById('ledgerList'); 
-        list.innerHTML = "";
-        db.reverse().forEach(c => {
-            if(!c.name.toLowerCase().includes(search)) return;
-            let paid = c.payments.reduce((s, p) => s + p.amt, 0), bal = c.total - paid;
-            list.innerHTML += `<div class="ledger-item" style="border-left-color:${bal<=0?'var(--green)':'var(--red)'}" onclick="openEmi(${c.id})">
-                <div><b>${c.name}</b><br><small>${c.model}</small></div>
-                <div style="text-align:right"><b>₹${bal.toFixed(0)}</b><br><small>${bal<=0?'SUCCESS':'PENDING'}</small></div>
-            </div>`;
-        });
-    }
-
-    function openEmi(id) {
-        activeCustId = id; let db = JSON.parse(localStorage.getItem("db_" + currentUser)), c = db.find(x => x.id === id);
-        document.getElementById('modalName').innerText = c.name; let h = "", tp = 0;
-        c.payments.forEach(p => { h += `<div>${p.date}: ₹${p.amt}</div>`; tp += p.amt; });
-        document.getElementById('hist').innerHTML = h + `<hr><b>Pending: ₹${(c.total-tp).toFixed(0)}</b>`;
-        document.getElementById('emiModal').style.display = 'block';
-    }
-
-    function addPayment() {
-        let amt = parseFloat(document.getElementById('newPay').value) || 0, db = JSON.parse(localStorage.getItem("db_" + currentUser)), idx = db.findIndex(x => x.id === activeCustId);
-        db[idx].payments.push({amt: amt, date: new Date().toLocaleString()});
-        localStorage.setItem("db_" + currentUser, JSON.stringify(db)); document.getElementById('emiModal').style.display = 'none';
-        printPDF(db[idx]); loadLedger();
-    }
-
-    function printPDF(c) {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF(); let shop = stores[currentUser], tp = c.payments.reduce((s, p) => s + p.amt, 0), bal = c.total - tp;
-        doc.setTextColor(235); doc.setFontSize(55); doc.text(shop.name, 105, 150, { align: 'center', angle: 45 }); // CENTER WATERMARK
-        doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 45, 'F');
-        doc.setTextColor(197, 160, 89); doc.setFontSize(22); doc.text(shop.name, 105, 20, {align: 'center'});
-        doc.setTextColor(255); doc.setFontSize(9); doc.text(shop.addr + " | Contact: " + shop.contacts, 105, 30, {align: 'center'});
-        doc.setTextColor(0); doc.text(`Date: ${c.date}`, 20, 55); doc.text(`Customer: ${c.name} | ${c.phone}`, 20, 65);
-        if(bal <= 0) { doc.setDrawColor(27, 67, 50); doc.setTextColor(27, 67, 50); doc.rect(140, 50, 50, 15); doc.text("SUCCESS FULL PAID", 143, 60); }
-        else { doc.setDrawColor(208, 0, 0); doc.setTextColor(208, 0, 0); doc.rect(140, 50, 50, 15); doc.text("PENDING EMI", 148, 60); }
-        doc.setTextColor(0); doc.setFillColor(245); doc.rect(20, 100, 170, 35, 'F');
-        doc.text(`Total Bill: Rs. ${c.total.toFixed(0)}`, 25, 110); doc.text(`Total Paid: Rs. ${tp.toFixed(0)}`, 25, 120);
-        doc.setFontSize(12); doc.text(`REMAINING BALANCE: Rs. ${bal.toFixed(0)}`, 25, 130);
-        let qrBox = document.createElement('div'); new QRCode(qrBox, { text: "https://instagram.com/"+shop.ig, width: 60, height: 60 });
-        setTimeout(() => { doc.addImage(qrBox.querySelector('canvas').toDataURL("image/png"), 'PNG', 150, 210, 35, 35); doc.save(c.name + "_Bill.pdf"); }, 500);
-    }
+    window.onload = () => { if(localStorage.getItem('session')) login(localStorage.getItem('session')); };
 </script>
 </body>
 </html>
