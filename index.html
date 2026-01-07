@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#001f3f">
-
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22NovaBillPro%22,%22short_name%22:%22NovaBill%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#001f3f%22,%22theme_color%22:%22#001f3f%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/1052/1052856.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]} ">
+    <link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
 
     <title>Nova Bill Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
