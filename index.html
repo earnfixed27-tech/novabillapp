@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova Digital - Premium Billing</title>
+    <title>Nova Digital - Smart Billing</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --main: #001f3f; --gold: #c5a059; --bg: #f8fafc; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; color: #1e293b; }
-        .header { background: linear-gradient(135deg, #001f3f 0%, #003366 100%); color: white; padding: 35px 15px; text-align: center; border-bottom: 6px solid var(--gold); }
+        .header { background: linear-gradient(135deg, #001f3f 0%, #003366 100%); color: white; padding: 25px; text-align: center; border-bottom: 6px solid var(--gold); position: relative; }
+        .lang-switch { position: absolute; top: 15px; right: 15px; }
         .container { max-width: 800px; margin: 20px auto; padding: 15px; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 25px; border-left: 5px solid var(--main); }
         h2 { font-size: 18px; color: var(--main); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         label { font-size: 12px; font-weight: bold; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; margin-bottom: 15px; background: #fcfcfc; }
+        input, select { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 15px; box-sizing: border-box; margin-bottom: 15px; }
         .btn { width: 100%; padding: 18px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; text-transform: uppercase; }
         .btn-main { background: var(--main); color: white; box-shadow: 0 5px 15px rgba(0,31,63,0.3); }
         .btn-wa { background: #128c7e; color: white; }
@@ -25,40 +26,46 @@
 <body>
 
 <div class="header">
-    <h1 style="margin:0; letter-spacing: 2px;">NOVA DIGITAL STORE</h1>
-    <p style="margin:5px 0 0; opacity: 0.8; font-size: 14px;">Authorized Premium Billing System</p>
+    <div class="lang-switch">
+        <select id="langSelect" onchange="changeLang()" style="width: auto; padding: 5px; border-radius: 5px; font-weight: bold;">
+            <option value="en">English</option>
+            <option value="mr">Marathi (मराठी)</option>
+        </select>
+    </div>
+    <h1 id="shopTitle" style="margin:0; letter-spacing: 2px;">NOVA DIGITAL STORE</h1>
+    <p id="shopSub" style="margin:5px 0 0; opacity: 0.8; font-size: 14px;">Authorized Premium Billing System</p>
 </div>
 
 <div class="container">
     <div class="card">
-        <h2>👤 CUSTOMER DETAILS (ग्राहकाचा तपशील)</h2>
+        <h2 id="custHead">👤 CUSTOMER DETAILS</h2>
         <div class="grid">
             <div>
-                <label>Customer Name (नाव)</label>
+                <label id="lblCustName">Customer Name</label>
                 <input type="text" id="cName" placeholder="Full Name">
             </div>
             <div>
-                <label>WhatsApp Number</label>
+                <label id="lblPhone">WhatsApp Number</label>
                 <input type="number" id="cPhone" oninput="if(this.value.length > 10) this.value = this.value.slice(0, 10);">
             </div>
         </div>
         <div class="grid">
             <div>
-                <label>GST No. (जीएसटी नंबर)</label>
-                <input type="text" id="gst" placeholder="GSTIN (Optional)">
+                <label id="lblGst">GST No. (Optional)</label>
+                <input type="text" id="gst" placeholder="GSTIN">
             </div>
             <div>
-                <label>Instagram ID</label>
+                <label id="lblInsta">Instagram ID</label>
                 <input type="text" id="insta" placeholder="@your_shop">
             </div>
         </div>
     </div>
 
     <div class="card">
-        <h2>📱 PRODUCT INFO (मोबाईल तपशील)</h2>
+        <h2 id="prodHead">📱 PRODUCT INFO</h2>
         <div class="grid">
             <div>
-                <label>Select Brand (ब्रँड)</label>
+                <label id="lblBrand">Select Brand</label>
                 <select id="brand">
                     <option value="iPhone">Apple iPhone</option>
                     <option value="Samsung">Samsung Mobile</option>
@@ -69,25 +76,25 @@
                 </select>
             </div>
             <div>
-                <label>Model Name (मॉडेल)</label>
-                <input type="text" id="model" placeholder="e.g. S24 Ultra">
+                <label id="lblModel">Model Name</label>
+                <input type="text" id="model" placeholder="Model">
             </div>
         </div>
-        <label>IMEI / Serial Number</label>
+        <label id="lblImei">IMEI / Serial Number</label>
         <input type="number" id="imei" oninput="if(this.value.length > 18) this.value = this.value.slice(0, 18);">
     </div>
 
     <div class="card">
-        <h2>💰 BILLING & OFFERS (बिल आणि सवलत)</h2>
+        <h2 id="billHead">💰 BILLING & OFFERS</h2>
         <div class="grid">
             <div>
-                <label>M.R.P Price (किंमत)</label>
+                <label id="lblMrp">M.R.P Price</label>
                 <input type="number" id="mrp" onkeyup="calc()" placeholder="0.00">
             </div>
             <div>
-                <label>Special Discount (%)</label>
+                <label id="lblDisc">Special Discount (%)</label>
                 <select id="disc" onchange="calc()">
-                    <option value="0">0% No Discount</option>
+                    <option value="0">0%</option>
                     <option value="2">2% Offer</option>
                     <option value="5">5% Fest Offer</option>
                     <option value="10">10% Mega Sale</option>
@@ -96,37 +103,53 @@
         </div>
         <div class="grid">
             <div>
-                <label>Paid Amount (दिलेली रक्कम)</label>
+                <label id="lblPaid">Paid Amount</label>
                 <input type="number" id="paid" onkeyup="calc()" placeholder="0.00">
             </div>
             <div>
-                <label>Payment Status</label>
+                <label id="lblStatus">Payment Status</label>
                 <select id="status">
-                    <option value="FULLY PAID">✅ FULLY PAID</option>
-                    <option value="PAYMENT DUE">⏳ PAYMENT DUE</option>
+                    <option value="FULLY PAID">FULLY PAID</option>
+                    <option value="PAYMENT DUE">PAYMENT DUE</option>
                 </select>
             </div>
         </div>
         <div class="final-box" id="balText">Balance Due: ₹0</div>
         
-        <button class="btn btn-main" onclick="generate('pdf')">Download Dashing Bill (PDF)</button>
-        <button class="btn btn-wa" onclick="generate('wa')">Share on WhatsApp</button>
+        <button class="btn btn-main" id="btnPdf" onclick="generate('pdf')">Download Dashing Bill (PDF)</button>
+        <button class="btn btn-wa" id="btnWa" onclick="generate('wa')">Share on WhatsApp</button>
     </div>
 </div>
 
 <script>
+    const langData = {
+        en: { shopTitle: "NOVA DIGITAL STORE", shopSub: "Authorized Premium Billing System", custHead: "👤 CUSTOMER DETAILS", lblCustName: "Customer Name", lblPhone: "WhatsApp Number", lblGst: "GST No. (Optional)", lblInsta: "Instagram ID", prodHead: "📱 PRODUCT INFO", lblBrand: "Select Brand", lblModel: "Model Name", lblImei: "IMEI / Serial Number", billHead: "💰 BILLING & OFFERS", lblMrp: "M.R.P Price", lblDisc: "Special Discount (%)", lblPaid: "Paid Amount", lblStatus: "Payment Status", btnPdf: "Download Dashing Bill (PDF)", btnWa: "Share on WhatsApp", bal: "Balance Due" },
+        mr: { shopTitle: "नोव्हा डिजिटल स्टोअर", shopSub: "अधिकृत प्रीमियम बिलिंग सिस्टिम", custHead: "👤 ग्राहकाचा तपशील", lblCustName: "ग्राहकाचे नाव", lblPhone: "व्हॉट्सॲप नंबर", lblGst: "जीएसटी नंबर", lblInsta: "इन्स्टाग्राम आयडी", prodHead: "📱 मोबाईल तपशील", lblBrand: "ब्रँड निवडा", lblModel: "मॉडेलचे नाव", lblImei: "IMEI नंबर", billHead: "💰 बिल आणि सवलत", lblMrp: "एकूण किंमत", lblDisc: "विशेष सवलत (%)", lblPaid: "दिलेली रक्कम", lblStatus: "पेमेंट स्थिती", btnPdf: "बिल डाउनलोड करा (PDF)", btnWa: "व्हॉट्सॲपवर शेअर करा", bal: "बाकी रक्कम" }
+    };
+
+    function changeLang() {
+        let lang = document.getElementById('langSelect').value;
+        let data = langData[lang];
+        for(let key in data) {
+            let el = document.getElementById(key);
+            if(el) el.innerText = data[key];
+        }
+        calc();
+    }
+
     function calc() {
         let m = parseFloat(document.getElementById('mrp').value) || 0;
         let d = parseFloat(document.getElementById('disc').value) || 0;
         let p = parseFloat(document.getElementById('paid').value) || 0;
-        let total = m - (m * d / 100);
-        let bal = total - p;
-        document.getElementById('balText').innerText = "Balance Due (बाकी): ₹" + (bal > 0 ? bal.toFixed(2) : 0);
+        let lang = document.getElementById('langSelect').value;
+        let bal = (m - (m * d / 100)) - p;
+        document.getElementById('balText').innerText = langData[lang].bal + ": ₹" + (bal > 0 ? bal.toFixed(2) : 0);
     }
 
     function generate(mode) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        let lang = document.getElementById('langSelect').value;
         
         let info = {
             name: document.getElementById('cName').value,
@@ -148,15 +171,15 @@
 
         if(mode === 'pdf') {
             doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 50, 'F');
-            doc.setTextColor(197, 160, 89); doc.setFontSize(28); 
+            doc.setTextColor(197, 160, 89); doc.setFontSize(26); 
             doc.text("NOVA DIGITAL STORE", 105, 25, {align: 'center'});
             doc.setTextColor(255, 255, 255); doc.setFontSize(10); 
             doc.text("PREMIUM AUTHORIZED TAX INVOICE", 105, 35, {align: 'center'});
 
             doc.setTextColor(0,0,0); doc.setFontSize(12);
-            doc.text(`Date: ${new Date().toLocaleDateString()}`, 145, 65);
+            doc.text(`Date/Date: ${new Date().toLocaleDateString()}`, 145, 65);
             
-            doc.setFont("helvetica", "bold"); doc.text("CUSTOMER DETAILS", 20, 80);
+            doc.setFont("helvetica", "bold"); doc.text("CUSTOMER DETAILS (Grahak)", 20, 80);
             doc.setFont("helvetica", "normal"); doc.setFontSize(10);
             doc.text(`Name (Nav): ${info.name}`, 20, 90);
             doc.text(`Contact: ${info.phone}`, 20, 100);
@@ -164,13 +187,13 @@
 
             doc.setDrawColor(0, 31, 63); doc.line(20, 115, 190, 115);
 
-            doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("PRODUCT DETAILS", 20, 130);
+            doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("PRODUCT DETAILS (Mobile)", 20, 130);
             doc.setFont("helvetica", "normal"); doc.setFontSize(10);
             doc.text(`Model: ${info.brand} ${info.model}`, 20, 140);
             doc.text(`IMEI/Serial: ${info.imei}`, 20, 150);
 
             doc.setFillColor(245, 245, 245); doc.rect(120, 160, 75, 45, 'F');
-            doc.text(`Price: Rs. ${info.mrp}`, 125, 172);
+            doc.text(`Price (Kimmat): Rs. ${info.mrp}`, 125, 172);
             doc.text(`Discount: - Rs. ${info.mrp * info.disc / 100}`, 125, 182);
             doc.text(`Paid (Advance): Rs. ${info.paid}`, 125, 192);
             doc.setFont("helvetica", "bold"); doc.setFontSize(13);
