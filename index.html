@@ -35,10 +35,9 @@
 <div id="loginScreen">
     <div class="login-box">
         <h2 style="color:var(--main); margin-bottom:5px;">SAIRAJ MOBILE</h2>
-        <p style="font-size:12px; color:#666; margin-bottom:20px;">Owner Login Only</p>
         <input type="text" id="user" placeholder="Shop ID">
         <input type="password" id="pass" placeholder="Password">
-        <button class="btn" onclick="handleLogin()">Login & Start</button>
+        <button class="btn" onclick="handleLogin()">Login</button>
         <button id="pwaBtn" class="btn" style="background:#ffcc00; color:black; margin-top:10px; display:none;" onclick="triggerInstall()">📲 INSTALL APP</button>
     </div>
 </div>
@@ -51,42 +50,39 @@
 
     <div class="container" id="billingPage">
         <div class="card">
-            <h3 style="margin-top:0; color:var(--main)">Billing Portal</h3>
             <input type="text" id="cName" placeholder="Customer Name">
             <input type="number" id="cPhone" placeholder="WhatsApp Number">
-            <textarea id="cAddr" placeholder="Customer Address (Manual)" rows="2"></textarea>
-            
-            <select id="brand"><option>iPhone</option><option>Samsung</option><option>Vivo</option><option>Oppo</option><option>Realme</option><option>Redmi</option><option>Other</option></select>
-            <input type="text" id="modelName" placeholder="Model Name (e.g. S24 Ultra)">
-            <input type="text" id="imeiNo" placeholder="IMEI Number (15 Digits)">
-
+            <textarea id="cAddr" placeholder="Customer Address" rows="1"></textarea>
+            <select id="brand"><option>iPhone</option><option>Samsung</option><option>Vivo</option><option>Oppo</option><option>Realme</option><option>Other</option></select>
+            <input type="text" id="modelName" placeholder="Model Name">
+            <input type="text" id="imeiNo" placeholder="IMEI Number">
             <div style="display:flex; gap:10px;">
-                <input type="number" id="total" placeholder="Total (₹)" onkeyup="calc()">
-                <input type="number" id="paid" placeholder="Paid (₹)" onkeyup="calc()">
+                <input type="number" id="total" placeholder="Total (Rs)" onkeyup="calc()">
+                <input type="number" id="paid" placeholder="Paid (Rs)" onkeyup="calc()">
             </div>
-            <p style="text-align:right; font-weight:bold; color:red;">Pending Balance: ₹<span id="bal">0</span></p>
-            <button class="btn" onclick="saveBill()">Save, Print & Share</button>
+            <p style="text-align:right; font-weight:bold; color:red;">Balance: Rs. <span id="bal">0</span></p>
+            <button class="btn" onclick="saveBill()">Save & Print Bill</button>
         </div>
     </div>
 
     <div class="container" id="ledgerPage" style="display:none;">
-        <input type="text" id="ledgerSearch" placeholder="🔍 Search Customer Name..." onkeyup="renderLedger()" style="border:2px solid var(--main)">
-        <button class="btn" style="background:var(--green); margin-bottom:15px; font-size:12px;" onclick="backupData()">💾 Backup Data (Save to Phone/Mail)</button>
+        <input type="text" id="ledgerSearch" placeholder="🔍 Search Customer..." onkeyup="renderLedger()" style="border:2px solid var(--main)">
+        <button class="btn" style="background:var(--green); margin-bottom:15px; font-size:12px;" onclick="downloadFullReport()">📋 DOWNLOAD FULL LEDGER (PDF)</button>
         <div id="ledgerList"></div>
     </div>
 
     <div class="tab-bar">
-        <div class="tab-item active" id="t1" onclick="tab('billing')">BILLING</div>
-        <div class="tab-item" id="t2" onclick="tab('ledger')">LEDGER/BACKUP</div>
+        <div class="tab-item active" id="t1" onclick="tab('billing')">NEW BILL</div>
+        <div class="tab-item" id="t2" onclick="tab('ledger')">LEDGER</div>
     </div>
 </div>
 
 <div id="emiModal">
     <div class="card" style="width:85%; max-width:320px;">
-        <h3 id="mName" style="margin:0;">Update</h3>
+        <h3 id="mName">Update</h3>
         <p id="mHistory" style="font-size:13px; color:#666;"></p>
-        <input type="number" id="addAmt" placeholder="Receive Payment (₹)">
-        <button class="btn" style="background:var(--green)" onclick="updatePayment()">Add & Print</button>
+        <input type="number" id="addAmt" placeholder="Add Amount (Rs)">
+        <button class="btn" style="background:var(--green)" onclick="updatePayment()">Update & Print</button>
         <button class="btn" style="background:#888; margin-top:5px;" onclick="closeModal()">Close</button>
     </div>
 </div>
@@ -94,13 +90,9 @@
 <script>
     const SHOP_CONFIG = { 
         sairaj: { 
-            name: "SAIRAJ MOBILE SHOPE", 
-            pass: "sairaj7397", 
+            name: "SAIRAJ MOBILE SHOPE", pass: "sairaj7397", 
             addr: "Rajdhani Chauk, Mangrulpir, Washim (444403)", 
-            contact: "+91 73979 94546", 
-            gst: "NOT SPECIFIED", 
-            watermark: "SAIRAJ MOBILE",
-            ig_id: "rairamobile" 
+            contact: "+91 73979 94546", watermark: "SAIRAJ MOBILE", ig_id: "rairamobile" 
         } 
     };
 
@@ -111,7 +103,7 @@
 
     function handleLogin() {
         let u = document.getElementById('user').value, p = document.getElementById('pass').value;
-        if(SHOP_CONFIG[u] && SHOP_CONFIG[u].pass === p) { localStorage.setItem('sairaj_user', u); startApp(u); } else { alert("Invalid ID/Password!"); }
+        if(SHOP_CONFIG[u] && SHOP_CONFIG[u].pass === p) { localStorage.setItem('sairaj_user', u); startApp(u); } else { alert("Invalid!"); }
     }
 
     function startApp(u) {
@@ -140,20 +132,8 @@
         };
         db.push(entry); localStorage.setItem('db_'+currentStore, JSON.stringify(db));
         printPDF(entry);
-        let bal = entry.total - entry.payments[0].amt;
-        let msg = `*${SHOP_CONFIG[currentStore].name}*%0A%0AHi ${entry.name}, your bill for ${entry.brand} ${entry.model} is ready.%0A*Total:* ₹${entry.total}%0A*Balance:* ₹${bal}%0A%0A_Please attach your PDF bill here._`;
-        setTimeout(() => { window.open(`https://wa.me/91${phone}?text=${msg}`, '_blank'); }, 3000);
+        setTimeout(() => { window.open(`https://wa.me/91${phone}?text=Hello ${entry.name}, your bill from ${SHOP_CONFIG[currentStore].name} is ready.`, '_blank'); }, 2000);
         tab('ledger');
-    }
-
-    function backupData() {
-        let data = localStorage.getItem('db_'+currentStore);
-        let blob = new Blob([data], { type: 'application/json' });
-        let a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `Sairaj_Backup_${new Date().toLocaleDateString()}.json`;
-        a.click();
-        alert("Backup file downloaded! Ab ise Gmail ya WhatsApp par send kar ke save rakhein.");
     }
 
     function renderLedger() {
@@ -163,7 +143,7 @@
             let tp = i.payments.reduce((a, b) => a + b.amt, 0), bal = i.total - tp;
             if(!i.name.toLowerCase().includes(search)) return;
             list.innerHTML += `<div class="card" onclick="openEmi(${i.id})" style="border-left-color:${bal<=0?'var(--green)':'var(--red)'}">
-                <b>${i.name}</b> <span style="float:right">₹${bal}</span><br><small>${i.brand} ${i.model} | ${i.date}</small>
+                <b>${i.name}</b> <span style="float:right">Bal: ${bal}</span><br><small>${i.brand} | ${i.date}</small>
             </div>`;
         });
     }
@@ -172,7 +152,7 @@
         activeId = id; let db = JSON.parse(localStorage.getItem('db_'+currentStore)), c = db.find(x => x.id === id);
         let tp = c.payments.reduce((a, b) => a + b.amt, 0);
         document.getElementById('mName').innerText = c.name;
-        document.getElementById('mHistory').innerText = `Total: ₹${c.total} | Balance: ₹${c.total - tp}`;
+        document.getElementById('mHistory').innerText = `Total: ${c.total} | Balance: ${c.total - tp}`;
         document.getElementById('emiModal').style.display = 'flex';
     }
 
@@ -185,26 +165,40 @@
 
     function closeModal() { document.getElementById('emiModal').style.display = 'none'; }
 
+    function downloadFullReport() {
+        const { jsPDF } = window.jspdf; const doc = new jsPDF(); let db = JSON.parse(localStorage.getItem('db_'+currentStore)) || [];
+        doc.setFontSize(16); doc.text("FULL LEDGER REPORT - " + SHOP_CONFIG[currentStore].name, 105, 15, {align:'center'});
+        doc.setFontSize(10); let y = 30;
+        db.forEach((i, index) => {
+            let tp = i.payments.reduce((a, b) => a + b.amt, 0);
+            doc.text(`${index+1}. ${i.name} | ${i.brand} | Total: ${i.total} | Paid: ${tp} | Bal: ${i.total-tp}`, 15, y);
+            y += 10; if (y > 280) { doc.addPage(); y = 20; }
+        });
+        doc.save("Full_Ledger_Report.pdf");
+    }
+
     function printPDF(c) {
         const { jsPDF } = window.jspdf; const doc = new jsPDF(); let conf = SHOP_CONFIG[currentStore];
         let tp = c.payments.reduce((a, b) => a + b.amt, 0), bal = c.total - tp;
-        doc.setTextColor(242); doc.setFontSize(45); doc.text(conf.watermark, 105, 150, {align:'center', angle:45});
+        doc.setTextColor(242); doc.setFontSize(40); doc.text(conf.watermark, 105, 150, {align:'center', angle:45});
         doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 40, 'F');
         doc.setTextColor(197, 160, 89); doc.setFontSize(22); doc.text(conf.name, 105, 18, {align:'center'});
-        doc.setTextColor(255); doc.setFontSize(8); doc.text(`${conf.addr} | Contact: ${conf.contact}`, 105, 28, {align:'center'});
+        doc.setTextColor(255); doc.setFontSize(8); doc.text(conf.addr + " | " + conf.contact, 105, 28, {align:'center'});
         doc.setTextColor(0); doc.setFontSize(10);
         doc.text(`Bill No: ${c.id}`, 20, 50); doc.text(`Date: ${c.date}`, 140, 50);
         doc.text(`Customer: ${c.name} (${c.phone})`, 20, 60); doc.text(`Address: ${c.addr}`, 20, 66);
-        doc.text(`Device: ${c.brand} ${c.model}`, 20, 75); doc.text(`IMEI: ${c.imei}`, 20, 81);
-        doc.rect(20, 90, 170, 35); doc.text(`Total Price: ₹${c.total}`, 25, 100); doc.text(`Paid: ₹${tp}`, 25, 110);
-        doc.setFontSize(14); doc.text(`BALANCE DUE: ₹${bal}`, 25, 120);
+        doc.text(`Device: ${c.brand} ${c.modelName || ''}`, 20, 75); doc.text(`IMEI: ${c.imei || ''}`, 20, 81);
+        doc.rect(20, 90, 170, 35); 
+        doc.text(`Total Price: Rs. ${c.total}`, 25, 100); 
+        doc.text(`Paid Amount: Rs. ${tp}`, 25, 110);
+        doc.setFontSize(14); doc.text(`BALANCE DUE: Rs. ${bal}`, 25, 120);
         let qrBox = document.createElement('div');
         new QRCode(qrBox, { text: "https://www.instagram.com/"+conf.ig_id, width: 80, height: 80 });
         setTimeout(() => {
             let canvas = qrBox.querySelector('canvas');
-            if(canvas) { doc.addImage(canvas.toDataURL("image/png"), 'PNG', 20, 230, 30, 30); doc.setFontSize(8); doc.text("Follow for latest updates", 20, 265); doc.text("@"+conf.ig_id, 20, 270); }
-            doc.line(20, 200, 70, 200); doc.text("Customer Signature", 25, 205);
-            doc.line(140, 200, 190, 200); doc.text("Owner Signature", 145, 205);
+            if(canvas) { doc.addImage(canvas.toDataURL("image/png"), 'PNG', 20, 230, 30, 30); doc.text("Follow @"+conf.ig_id, 20, 265); }
+            doc.line(20, 210, 70, 210); doc.text("Customer Sign", 25, 215);
+            doc.line(140, 210, 190, 210); doc.text("Owner Sign", 145, 215);
             doc.save(`${c.name}_Bill.pdf`);
         }, 500);
     }
