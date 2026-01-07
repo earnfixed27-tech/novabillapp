@@ -22,8 +22,13 @@
         .header { background: var(--main); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--gold); padding-top: env(safe-area-inset-top); }
         .container { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 90px; }
         .card { background: white; padding: 18px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 6px solid var(--main); }
-        input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; margin-bottom: 12px; font-size: 15px; box-sizing: border-box; outline: none; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 12px; font-size: 15px; box-sizing: border-box; outline: none; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; background: var(--main); text-transform: uppercase; }
+        
+        .filter-bar { display: flex; gap: 5px; margin-bottom: 15px; }
+        .f-btn { flex: 1; padding: 8px; font-size: 10px; border: 1px solid var(--main); background: white; border-radius: 20px; font-weight: bold; color: var(--main); cursor: pointer; }
+        .f-btn.active { background: var(--main); color: white; }
+
         .tab-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); }
         .tab-item { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: #888; }
         .tab-item.active { color: var(--main); border-top: 3px solid var(--main); }
@@ -34,11 +39,11 @@
 
 <div id="loginScreen">
     <div class="login-box">
-        <h2 style="color:var(--main); margin-bottom:5px;">SAIRAJ MOBILE</h2>
+        <h2 style="color:var(--main); margin-bottom:10px;">SAIRAJ MOBILE</h2>
         <input type="text" id="user" placeholder="Shop ID">
         <input type="password" id="pass" placeholder="Password">
         <button class="btn" onclick="handleLogin()">Login</button>
-        <button id="pwaBtn" class="btn" style="background:#ffcc00; color:black; margin-top:10px; display:none;" onclick="triggerInstall()">📲 INSTALL APP</button>
+        <button id="pwaBtn" class="btn" style="background:#ffcc00; color:black; margin-top:10px;" onclick="triggerInstall()">📲 INSTALL APP</button>
     </div>
 </div>
 
@@ -67,6 +72,13 @@
 
     <div class="container" id="ledgerPage" style="display:none;">
         <input type="text" id="ledgerSearch" placeholder="🔍 Search Customer..." onkeyup="renderLedger()" style="border:2px solid var(--main)">
+        
+        <div class="filter-bar">
+            <button class="f-btn active" id="btnAll" onclick="setFilter('all')">ALL</button>
+            <button class="f-btn" id="btnPending" onclick="setFilter('pending')">PENDING</button>
+            <button class="f-btn" id="btnPaid" onclick="setFilter('paid')">FULL PAID</button>
+        </div>
+
         <button class="btn" style="background:var(--green); margin-bottom:15px; font-size:12px;" onclick="downloadFullReport()">📋 DOWNLOAD FULL LEDGER (PDF)</button>
         <div id="ledgerList"></div>
     </div>
@@ -96,10 +108,13 @@
         } 
     };
 
-    let currentStore = null, activeId = null, deferredPrompt;
+    let currentStore = null, activeId = null, deferredPrompt, currentFilter = 'all';
 
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwaBtn').style.display = 'block'; });
-    function triggerInstall() { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } }
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+    async function triggerInstall() { 
+        if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } 
+        else { alert("Open in Chrome and use 'Add to Home Screen'"); }
+    }
 
     function handleLogin() {
         let u = document.getElementById('user').value, p = document.getElementById('pass').value;
@@ -122,6 +137,14 @@
         if(x=='ledger') renderLedger();
     }
 
+    function setFilter(f) {
+        currentFilter = f;
+        document.getElementById('btnAll').classList.toggle('active', f=='all');
+        document.getElementById('btnPending').classList.toggle('active', f=='pending');
+        document.getElementById('btnPaid').classList.toggle('active', f=='paid');
+        renderLedger();
+    }
+
     function saveBill() {
         let db = JSON.parse(localStorage.getItem('db_'+currentStore)) || [];
         let phone = document.getElementById('cPhone').value;
@@ -132,7 +155,7 @@
         };
         db.push(entry); localStorage.setItem('db_'+currentStore, JSON.stringify(db));
         printPDF(entry);
-        setTimeout(() => { window.open(`https://wa.me/91${phone}?text=Hello ${entry.name}, your bill from ${SHOP_CONFIG[currentStore].name} is ready.`, '_blank'); }, 2000);
+        setTimeout(() => { window.open(`https://wa.me/91${phone}?text=Hello ${entry.name}, your bill from SAIRAJ MOBILE SHOPE is ready.`, '_blank'); }, 2000);
         tab('ledger');
     }
 
@@ -142,8 +165,13 @@
         db.reverse().forEach(i => {
             let tp = i.payments.reduce((a, b) => a + b.amt, 0), bal = i.total - tp;
             if(!i.name.toLowerCase().includes(search)) return;
+            
+            // Filter Logic
+            if(currentFilter === 'pending' && bal <= 0) return;
+            if(currentFilter === 'paid' && bal > 0) return;
+
             list.innerHTML += `<div class="card" onclick="openEmi(${i.id})" style="border-left-color:${bal<=0?'var(--green)':'var(--red)'}">
-                <b>${i.name}</b> <span style="float:right">Bal: ${bal}</span><br><small>${i.brand} | ${i.date}</small>
+                <b>${i.name}</b> <span style="float:right">Rs. ${bal}</span><br><small>${i.brand} | ${i.date}</small>
             </div>`;
         });
     }
@@ -167,11 +195,12 @@
 
     function downloadFullReport() {
         const { jsPDF } = window.jspdf; const doc = new jsPDF(); let db = JSON.parse(localStorage.getItem('db_'+currentStore)) || [];
-        doc.setFontSize(16); doc.text("FULL LEDGER REPORT - " + SHOP_CONFIG[currentStore].name, 105, 15, {align:'center'});
-        doc.setFontSize(10); let y = 30;
-        db.forEach((i, index) => {
+        doc.setFontSize(16); doc.text("FULL LEDGER REPORT - SAIRAJ MOBILE", 105, 15, {align:'center'});
+        let y = 30;
+        db.forEach((i, idx) => {
             let tp = i.payments.reduce((a, b) => a + b.amt, 0);
-            doc.text(`${index+1}. ${i.name} | ${i.brand} | Total: ${i.total} | Paid: ${tp} | Bal: ${i.total-tp}`, 15, y);
+            doc.setFontSize(10);
+            doc.text(`${idx+1}. Name: ${i.name} | Device: ${i.brand} | Bal: Rs.${i.total-tp} | Date: ${i.date}`, 15, y);
             y += 10; if (y > 280) { doc.addPage(); y = 20; }
         });
         doc.save("Full_Ledger_Report.pdf");
@@ -187,10 +216,8 @@
         doc.setTextColor(0); doc.setFontSize(10);
         doc.text(`Bill No: ${c.id}`, 20, 50); doc.text(`Date: ${c.date}`, 140, 50);
         doc.text(`Customer: ${c.name} (${c.phone})`, 20, 60); doc.text(`Address: ${c.addr}`, 20, 66);
-        doc.text(`Device: ${c.brand} ${c.modelName || ''}`, 20, 75); doc.text(`IMEI: ${c.imei || ''}`, 20, 81);
-        doc.rect(20, 90, 170, 35); 
-        doc.text(`Total Price: Rs. ${c.total}`, 25, 100); 
-        doc.text(`Paid Amount: Rs. ${tp}`, 25, 110);
+        doc.text(`Device: ${c.brand} ${c.modelName || ''}`, 20, 75); doc.text(`IMEI: ${c.imeiNo || ''}`, 20, 81);
+        doc.rect(20, 90, 170, 35); doc.text(`Total Price: Rs. ${c.total}`, 25, 100); doc.text(`Paid: Rs. ${tp}`, 25, 110);
         doc.setFontSize(14); doc.text(`BALANCE DUE: Rs. ${bal}`, 25, 120);
         let qrBox = document.createElement('div');
         new QRCode(qrBox, { text: "https://www.instagram.com/"+conf.ig_id, width: 80, height: 80 });
@@ -202,7 +229,6 @@
             doc.save(`${c.name}_Bill.pdf`);
         }, 500);
     }
-
     window.onload = () => { if(localStorage.getItem('sairaj_user')) startApp(localStorage.getItem('sairaj_user')); };
 </script>
 </body>
