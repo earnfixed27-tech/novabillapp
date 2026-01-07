@@ -147,54 +147,47 @@
         let final = total - info.paid;
 
         if(mode === 'pdf') {
-            // Premium Corporate Header
             doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 50, 'F');
             doc.setTextColor(197, 160, 89); doc.setFontSize(28); 
             doc.text("NOVA DIGITAL STORE", 105, 25, {align: 'center'});
             doc.setTextColor(255, 255, 255); doc.setFontSize(10); 
             doc.text("PREMIUM AUTHORIZED TAX INVOICE", 105, 35, {align: 'center'});
 
-            // Bill Info Line
             doc.setTextColor(0,0,0); doc.setFontSize(12);
-            doc.text(`Date/दिनांक: ${new Date().toLocaleDateString()}`, 145, 65);
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 145, 65);
             
-            // Customer Section
-            doc.setFont("helvetica", "bold"); doc.text("CUSTOMER DETAILS (ग्राहक)", 20, 80);
+            doc.setFont("helvetica", "bold"); doc.text("CUSTOMER DETAILS", 20, 80);
             doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-            doc.text(`Name (नाव): ${info.name}`, 20, 90);
+            doc.text(`Name (Nav): ${info.name}`, 20, 90);
             doc.text(`Contact: ${info.phone}`, 20, 100);
             if(info.gst) doc.text(`GST No: ${info.gst}`, 20, 110);
 
             doc.setDrawColor(0, 31, 63); doc.line(20, 115, 190, 115);
 
-            // Product Section
-            doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("PRODUCT DETAILS (मोबाईल)", 20, 130);
+            doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("PRODUCT DETAILS", 20, 130);
             doc.setFont("helvetica", "normal"); doc.setFontSize(10);
             doc.text(`Model: ${info.brand} ${info.model}`, 20, 140);
             doc.text(`IMEI/Serial: ${info.imei}`, 20, 150);
 
-            // Calculation Box (Professional Table Style)
             doc.setFillColor(245, 245, 245); doc.rect(120, 160, 75, 45, 'F');
-            doc.text(`Price (किंमत): Rs. ${info.mrp}`, 125, 172);
+            doc.text(`Price: Rs. ${info.mrp}`, 125, 172);
             doc.text(`Discount: - Rs. ${info.mrp * info.disc / 100}`, 125, 182);
-            doc.text(`Paid: Rs. ${info.paid}`, 125, 192);
+            doc.text(`Paid (Advance): Rs. ${info.paid}`, 125, 192);
             doc.setFont("helvetica", "bold"); doc.setFontSize(13);
-            doc.text(`DUE (बाकी): Rs. ${final.toFixed(2)}`, 125, 202);
+            doc.text(`DUE (Baki): Rs. ${final.toFixed(2)}`, 125, 202);
 
-            // Social Media (Instagram Link)
             if(info.insta) {
                 doc.setTextColor(225, 48, 108); doc.setFontSize(10);
                 doc.text(`Instagram: @${info.insta}`, 20, 215);
                 doc.link(20, 210, 80, 10, {url: `https://instagram.com/${info.insta}`});
             }
 
-            // Dashing Signature Section
             doc.setTextColor(0,0,0); doc.setFontSize(11);
             doc.text("_________________________", 20, 265);
-            doc.text("Owner Sign (मालकाची सही)", 25, 275);
+            doc.text("Owner Sign (Malak)", 25, 275);
             
             doc.text("_________________________", 130, 265);
-            doc.text("Customer Sign (ग्राहकाची सही)", 135, 275);
+            doc.text("Customer Sign (Grahak)", 135, 275);
 
             doc.save(`${info.name}_Invoice.pdf`);
         } else {
