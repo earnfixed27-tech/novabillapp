@@ -3,255 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova Enterprise - Professional Billing</title>
+    <title>Enterprise Billing - EMI & Ledger Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script> 
     <style>
-        :root { --main: #001f3f; --gold: #c5a059; --accent: #007bff; --bg: #f1f5f9; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: #333; }
-        
-        /* Login Styles */
-        #loginPage { position: fixed; inset: 0; background: var(--main); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-card { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 320px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-        
-        /* Header */
-        .header { background: linear-gradient(135deg, #001f3f 0%, #003366 100%); color: white; padding: 30px; text-align: center; border-bottom: 5px solid var(--gold); }
-        .container { max-width: 900px; margin: 20px auto; padding: 15px; }
-        
-        /* Tabs */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: #ddd; cursor: pointer; border-radius: 8px; font-weight: bold; }
-        .tab-btn.active { background: var(--main); color: white; }
-        
-        /* Common UI */
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        :root { --main: #001f3f; --gold: #c5a059; --bg: #f4f7f9; --red: #d90429; --green: #2b9348; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; }
+        #loginScreen { position: fixed; inset: 0; background: #001f3f; display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; width: 350px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border-top: 8px solid var(--gold); }
+        #mainApp { display: none; }
+        .header { background: #001f3f; color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--gold); }
+        #liveClock { font-size: 16px; color: var(--gold); font-weight: bold; margin-top: 5px; }
+        .container { max-width: 900px; margin: 10px auto; padding: 15px; }
+        .card { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        label { font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 5px; display: block; }
         input, select { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 5px; }
-        .btn-blue { background: var(--main); color: white; }
-        .btn-green { background: #28a745; color: white; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 10px; }
+        .btn-blue { background: #001f3f; color: white; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: #ddd; }
+        .tab-btn.active { background: #001f3f; color: white; }
         
-        /* Search & Ledger */
-        .search-box { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        .ledger-item { border-left: 5px solid var(--main); background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .status-badge { padding: 4px 8px; border-radius: 5px; font-size: 10px; font-weight: bold; }
-        .paid { background: #d4edda; color: #155724; }
-        .due { background: #f8d7da; color: #721c24; }
-        
-        #appContent { display: none; }
+        /* EMI List Styles */
+        .ledger-row { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; border-left: 6px solid #ddd; transition: 0.3s; }
+        .status-tag { padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .tag-pending { background: #ffe3e3; color: var(--red); }
+        .tag-success { background: #e3ffe3; color: var(--green); }
+        .history-item { font-size: 12px; padding: 5px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
-<div id="loginPage">
-    <div class="login-card">
-        <h2 style="color:var(--main)">OWNER LOGIN</h2>
-        <input type="text" id="username" placeholder="Username (admin)">
-        <input type="password" id="password" placeholder="Password (nova123)">
-        <button class="btn btn-blue" onclick="checkLogin()">Enter Store</button>
+<div id="loginScreen">
+    <div class="login-box">
+        <h2 style="color:#001f3f;">STORE LOGIN</h2>
+        <input type="text" id="user" placeholder="Shop ID">
+        <input type="password" id="pass" placeholder="Password">
+        <button class="btn btn-blue" onclick="handleLogin()">Login</button>
     </div>
 </div>
 
-<div id="appContent">
+<div id="mainApp">
     <div class="header">
-        <h1>NOVA DIGITAL STORE</h1>
-        <p>Premium Enterprise Billing Solution</p>
+        <h1 id="displayShopName" style="margin:0;">SHOP NAME</h1>
+        <div id="liveClock">Loading Time...</div>
     </div>
 
     <div class="container">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('bill')">New Billing</button>
-            <button class="tab-btn" onclick="showTab('history')">Ledger / History</button>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button class="tab-btn active" id="tab1" onclick="switchTab('billing')">New Bill</button>
+            <button class="tab-btn" id="tab2" onclick="switchTab('ledger')">EMI Ledger (History)</button>
         </div>
 
-        <div id="tab_bill">
+        <div id="billingPage">
             <div class="card">
-                <h2>Customer Details</h2>
+                <h3>Customer & Product</h3>
                 <div class="grid">
-                    <div><label>Name</label><input type="text" id="cName"></div>
-                    <div><label>WhatsApp</label><input type="number" id="cPhone"></div>
+                    <input type="text" id="cName" placeholder="Customer Name">
+                    <input type="number" id="cPhone" placeholder="WhatsApp No.">
                 </div>
                 <div class="grid">
-                    <div><label>GST No.</label><input type="text" id="gst"></div>
-                    <div><label>Instagram ID</label><input type="text" id="insta"></div>
+                    <select id="brand"><option>Samsung</option><option>iPhone</option><option>Vivo</option><option>Oppo</option><option>Realme</option></select>
+                    <input type="text" id="model" placeholder="Model Name">
                 </div>
-            </div>
-
-            <div class="card">
-                <h2>Product & Warranty</h2>
-                <div class="grid">
-                    <div>
-                        <label>Brand</label>
-                        <select id="brand">
-                            <option>Samsung</option><option>iPhone</option>
-                            <option>Vivo</option><option>Oppo</option><option>Realme</option>
-                        </select>
-                    </div>
-                    <div><label>Model</label><input type="text" id="model"></div>
-                </div>
-                <div class="grid">
-                    <div><label>IMEI</label><input type="number" id="imei"></div>
-                    <div><label>Warranty (Months)</label><input type="number" id="warranty" value="12"></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Payment</h2>
-                <div class="grid">
-                    <div><label>Price (₹)</label><input type="number" id="mrp" onkeyup="calc()"></div>
-                    <div><label>Paid (₹)</label><input type="number" id="paid" onkeyup="calc()"></div>
-                </div>
-                <h3 id="balDisp" style="color:red; text-align:center;">Balance: ₹0</h3>
-                <button class="btn btn-blue" onclick="saveAndPrint()">Download Pro Invoice</button>
-                <button class="btn btn-green" onclick="shareWA()">Send on WhatsApp</button>
+                <input type="number" id="imei" placeholder="IMEI Number">
+                <input type="number" id="mrp" placeholder="Total Price (₹)">
+                <input type="number" id="paid" placeholder="Advance Paid (₹)">
+                <input type="number" id="warranty" value="12" placeholder="Warranty Months">
+                <button class="btn btn-blue" onclick="generateNewBill()">Create & Print First Bill</button>
             </div>
         </div>
 
-        <div id="tab_history" style="display:none;">
-            <div class="search-box">
-                <input type="text" id="search" placeholder="Search by name or number..." onkeyup="loadHistory()">
-                <div style="display:flex; gap:10px;">
-                    <button class="tab-btn" onclick="filterHistory('ALL')">All</button>
-                    <button class="tab-btn" onclick="filterHistory('DUE')">Udhari (Due)</button>
-                    <button class="tab-btn" onclick="filterHistory('PAID')">Paid</button>
-                </div>
+        <div id="ledgerPage" style="display:none;">
+            <div class="card">
+                <input type="text" id="search" placeholder="Search Customer..." onkeyup="loadLedger()">
+                <div id="ledgerList"></div>
             </div>
-            <div id="historyList"></div>
         </div>
+    </div>
+</div>
+
+<div id="emiModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:10000; overflow-y:auto; padding:20px;">
+    <div class="card" style="max-width:500px; margin:auto;">
+        <h2 id="modalCustName">Update Payment</h2>
+        <div id="emiHistoryArea"></div>
+        <hr>
+        <label>Add New Installment (EMI)</label>
+        <input type="number" id="newEmiAmt" placeholder="Amount (₹)">
+        <button class="btn btn-blue" onclick="submitEmi()">Add & Update Balance</button>
+        <button class="btn" onclick="document.getElementById('emiModal').style.display='none'">Close</button>
     </div>
 </div>
 
 <script>
-    let filter = 'ALL';
+    const accounts = {
+        "nova1": { pass: "nova123", name: "NOVA DIGITAL WORLD", instaID: "novadigital", contactNo: "+91 9876543210", gstNo: "27ABC123" },
+        "admin": { pass: "master999", name: "MASTER ADMIN", instaID: "", contactNo: "", gstNo: "" }
+    };
 
-    function checkLogin() {
-        if(document.getElementById('username').value === 'admin' && document.getElementById('password').value === 'nova123') {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('appContent').style.display = 'block';
-        } else { alert('Wrong Credentials'); }
+    let loggedInUser = "";
+    let selectedCustId = null;
+
+    function handleLogin() {
+        let u = document.getElementById('user').value;
+        let p = document.getElementById('pass').value;
+        if (accounts[u] && accounts[u].pass === p) {
+            loggedInUser = u;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('displayShopName').innerText = accounts[u].name;
+            setInterval(updateClock, 1000);
+        } else { alert("Wrong Credentials!"); }
     }
 
-    function showTab(t) {
-        document.getElementById('tab_bill').style.display = (t === 'bill') ? 'block' : 'none';
-        document.getElementById('tab_history').style.display = (t === 'history') ? 'block' : 'none';
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        if(t === 'history') { loadHistory(); document.querySelectorAll('.tab-btn')[1].classList.add('active'); }
-        else { document.querySelectorAll('.tab-btn')[0].classList.add('active'); }
+    function updateClock() {
+        document.getElementById('liveClock').innerText = new Date().toLocaleString();
     }
 
-    function calc() {
-        let m = parseFloat(document.getElementById('mrp').value) || 0;
-        let p = parseFloat(document.getElementById('paid').value) || 0;
-        document.getElementById('balDisp').innerText = "Balance: ₹" + (m - p);
+    function switchTab(t) {
+        document.getElementById('billingPage').style.display = (t === 'billing' ? 'block' : 'none');
+        document.getElementById('ledgerPage').style.display = (t === 'ledger' ? 'block' : 'none');
+        document.getElementById('tab1').classList.toggle('active', t === 'billing');
+        document.getElementById('tab2').classList.toggle('active', t === 'ledger');
+        if(t === 'ledger') loadLedger();
     }
 
-    function saveAndPrint() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
+    function generateNewBill() {
         let data = {
             id: Date.now(),
             name: document.getElementById('cName').value,
             phone: document.getElementById('cPhone').value,
-            model: document.getElementById('model').value,
             brand: document.getElementById('brand').value,
+            model: document.getElementById('model').value,
             imei: document.getElementById('imei').value,
             mrp: parseFloat(document.getElementById('mrp').value) || 0,
-            paid: parseFloat(document.getElementById('paid').value) || 0,
-            date: new Date().toLocaleDateString(),
-            wMonths: parseInt(document.getElementById('warranty').value) || 0
+            warranty: parseInt(document.getElementById('warranty').value) || 0,
+            payments: [{ amt: parseFloat(document.getElementById('paid').value) || 0, date: new Date().toLocaleString() }],
+            date: new Date().toLocaleString()
         };
-
-        // Automatic Warranty Date
-        let expiry = new Date();
-        expiry.setMonth(expiry.getMonth() + data.wMonths);
-        data.expiryDate = expiry.toLocaleDateString();
-
-        // Save to LocalStorage
-        let history = JSON.parse(localStorage.getItem('nova_db')) || [];
-        history.push(data);
-        localStorage.setItem('nova_db', JSON.stringify(history));
-
-        // Generate PDF
-        doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 45, 'F');
         
-        // Watermark
-        doc.setTextColor(240, 240, 240); doc.setFontSize(40);
-        doc.text("NOVA DIGITAL STORE", 30, 150, {angle: 45});
+        if(!data.name || !data.mrp) return alert("Fill Name and Price!");
 
-        doc.setTextColor(197, 160, 89); doc.setFontSize(24);
-        doc.text("NOVA DIGITAL STORE", 105, 20, {align: 'center'});
-        doc.setTextColor(255, 255, 255); doc.setFontSize(10);
-        doc.text("PREMIUM AUTHORIZED TAX INVOICE", 105, 30, {align: 'center'});
-
-        doc.setTextColor(0,0,0); doc.setFontSize(10);
-        doc.text(`Invoice No: INV-${data.id.toString().slice(-6)}`, 20, 55);
-        doc.text(`Date: ${data.date}`, 150, 55);
-
-        doc.setFont("helvetica", "bold"); doc.text("CUSTOMER DETAILS", 20, 70);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Name: ${data.name}`, 20, 80);
-        doc.text(`Contact: ${data.phone}`, 20, 90);
-
-        doc.line(20, 95, 190, 95);
-        doc.setFont("helvetica", "bold"); doc.text("PRODUCT & WARRANTY", 20, 105);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Device: ${data.brand} ${data.model}`, 20, 115);
-        doc.text(`IMEI: ${data.imei}`, 20, 125);
-        doc.setTextColor(0, 100, 0);
-        doc.text(`Warranty Period: ${data.date} TO ${data.expiryDate}`, 20, 135);
-
-        doc.setTextColor(0,0,0);
-        doc.setFillColor(245, 245, 245); doc.rect(130, 145, 60, 35, 'F');
-        doc.text(`Total Price: Rs. ${data.mrp}`, 135, 155);
-        doc.text(`Paid Amt: Rs. ${data.paid}`, 135, 165);
-        doc.setFont("helvetica", "bold");
-        doc.text(`BALANCE: Rs. ${data.mrp - data.paid}`, 135, 175);
-
-        doc.text("___________________", 20, 250); doc.text("Owner Signature", 20, 260);
-        doc.text("___________________", 140, 250); doc.text("Customer Signature", 140, 260);
-
-        doc.save(`${data.name}_Invoice.pdf`);
+        let dbKey = "db_v4_" + loggedInUser;
+        let db = JSON.parse(localStorage.getItem(dbKey)) || [];
+        db.push(data);
+        localStorage.setItem(dbKey, JSON.stringify(db));
+        
+        printBill(data);
+        alert("New Bill Saved!");
     }
 
-    function loadHistory() {
-        let db = JSON.parse(localStorage.getItem('nova_db')) || [];
+    function loadLedger() {
+        let dbKey = "db_v4_" + loggedInUser;
+        let db = JSON.parse(localStorage.getItem(dbKey)) || [];
         let search = document.getElementById('search').value.toLowerCase();
-        let list = document.getElementById('historyList');
+        let list = document.getElementById('ledgerList');
         list.innerHTML = "";
 
-        db.reverse().forEach(x => {
-            let bal = x.mrp - x.paid;
-            let status = (bal > 0) ? 'DUE' : 'PAID';
-            
-            if(filter !== 'ALL' && filter !== status) return;
-            if(!x.name.toLowerCase().includes(search) && !x.phone.includes(search)) return;
+        db.reverse().forEach(cust => {
+            if(!cust.name.toLowerCase().includes(search)) return;
+            let totalPaid = cust.payments.reduce((sum, p) => sum + p.amt, 0);
+            let bal = cust.mrp - totalPaid;
+            let status = (bal <= 0) ? 'tag-success' : 'tag-pending';
+            let label = (bal <= 0) ? 'Success' : 'Pending';
 
             list.innerHTML += `
-                <div class="ledger-item">
-                    <div>
-                        <b>${x.name}</b> (${x.date})<br>
-                        <small>${x.brand} ${x.model}</small>
-                    </div>
+                <div class="ledger-row" style="border-left-color: ${bal <= 0 ? 'var(--green)' : 'var(--red)'}" onclick="openEmiModal(${cust.id})">
+                    <div><b>${cust.name}</b><br><small>${cust.brand} ${cust.model}</small></div>
                     <div style="text-align:right">
-                        <span class="status-badge ${status.toLowerCase()}">${status}</span><br>
-                        <b>₹${bal}</b>
+                        <span class="status-tag ${status}">${label}</span><br>
+                        <b>₹${bal} Due</b>
                     </div>
-                </div>
-            `;
+                </div>`;
         });
     }
 
-    function filterHistory(f) { filter = f; loadHistory(); }
+    function openEmiModal(id) {
+        selectedCustId = id;
+        let db = JSON.parse(localStorage.getItem("db_v4_" + loggedInUser));
+        let cust = db.find(x => x.id === id);
+        document.getElementById('modalCustName').innerText = cust.name;
+        let histHtml = "<h4>Payment History</h4>";
+        let totalPaid = 0;
+        cust.payments.forEach(p => {
+            histHtml += `<div class="history-item"><span>${p.date}</span> <b>₹${p.amt}</b></div>`;
+            totalPaid += p.amt;
+        });
+        histHtml += `<div style="margin-top:10px; font-weight:bold; color:var(--red);">Total Balance: ₹${cust.mrp - totalPaid}</div>`;
+        document.getElementById('emiHistoryArea').innerHTML = histHtml;
+        document.getElementById('emiModal').style.display = 'block';
+    }
 
-    function shareWA() {
-        let n = document.getElementById('cName').value;
-        let p = document.getElementById('cPhone').value;
-        let m = document.getElementById('mrp').value;
-        let paid = document.getElementById('paid').value;
-        let bal = m - paid;
-        let msg = `*NOVA DIGITAL STORE*%0A---%0A*Name:* ${n}%0A*Total:* ₹${m}%0A*Balance:* ₹${bal}%0A*Warranty:* 1 Year%0A---%0A_Thank you for visiting!_`;
-        window.open(`https://wa.me/91${p}?text=${msg}`, '_blank');
+    function submitEmi() {
+        let amt = parseFloat(document.getElementById('newEmiAmt').value) || 0;
+        if(amt <= 0) return alert("Enter valid amount");
+
+        let dbKey = "db_v4_" + loggedInUser;
+        let db = JSON.parse(localStorage.getItem(dbKey));
+        let idx = db.findIndex(x => x.id === selectedCustId);
+        
+        db[idx].payments.push({ amt: amt, date: new Date().toLocaleString() });
+        localStorage.setItem(dbKey, JSON.stringify(db));
+        
+        alert("Payment Updated!");
+        document.getElementById('emiModal').style.display = 'none';
+        printBill(db[idx]);
+        loadLedger();
+    }
+
+    async function printBill(cust) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let shop = accounts[loggedInUser];
+        let totalPaid = cust.payments.reduce((sum, p) => sum + p.amt, 0);
+        let bal = cust.mrp - totalPaid;
+
+        // Corporate Header
+        doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 45, 'F');
+        doc.setTextColor(197, 160, 89); doc.setFontSize(22); doc.text(shop.name, 105, 20, {align: 'center'});
+        doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.text("DIGITAL TAX INVOICE", 105, 30, {align: 'center'});
+
+        // Customer & Product Info
+        doc.setTextColor(0,0,0); doc.setFontSize(10);
+        doc.text(`Customer: ${cust.name}`, 20, 60);
+        doc.text(`Contact: ${cust.phone}`, 20, 70);
+        doc.text(`Handset: ${cust.brand} ${cust.model}`, 20, 80);
+        doc.text(`IMEI/SN: ${cust.imei}`, 20, 90);
+
+        // Status Stamp (Green/Red)
+        if(bal <= 0) {
+            doc.setDrawColor(43, 147, 72); doc.setTextColor(43, 147, 72);
+            doc.rect(140, 55, 50, 15); doc.text("SUCCESSFUL ✅", 145, 65);
+        } else {
+            doc.setDrawColor(217, 4, 41); doc.setTextColor(217, 4, 41);
+            doc.rect(140, 55, 50, 15); doc.text("PENDING EMI ⏳", 145, 65);
+        }
+
+        doc.setTextColor(0,0,0);
+        doc.setFillColor(245, 245, 245); doc.rect(20, 105, 170, 40, 'F');
+        doc.text(`Total Price: Rs. ${cust.mrp}`, 25, 115);
+        doc.text(`Total Received: Rs. ${totalPaid}`, 25, 125);
+        doc.setFontSize(12); doc.text(`BALANCE DUE: Rs. ${bal}`, 25, 137);
+
+        // Signature
+        doc.setFontSize(10);
+        doc.text("_________________", 20, 260); doc.text("Owner Sign", 25, 270);
+        doc.text("_________________", 140, 260); doc.text("Customer Sign", 145, 270);
+
+        doc.save(`${cust.name}_Bill.pdf`);
     }
 </script>
 
