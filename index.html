@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <link rel="manifest" href="manifest.json">
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }</script>
-
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#001f3f">
@@ -17,30 +15,22 @@
 
     <style>
         :root { --main: #001f3f; --gold: #c5a059; --red: #d00000; --green: #1b4332; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; padding: 0; height: 100vh; overflow: hidden; }
-        
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; height: 100vh; overflow: hidden; }
         #loginScreen { position: fixed; inset: 0; background: var(--main); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-box { background: white; padding: 30px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; }
-        
+        .login-box { background: white; padding: 30px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         #mainApp { display: none; height: 100vh; flex-direction: column; }
         .header { background: var(--main); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--gold); padding-top: env(safe-area-inset-top); }
-        
         .container { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px; }
-        .card { background: white; padding: 18px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        
-        label { font-size: 12px; font-weight: bold; color: var(--main); display: block; margin-bottom: 5px; }
+        .card { background: white; padding: 18px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 6px solid var(--main); }
         input, select, textarea { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; margin-bottom: 12px; font-size: 15px; box-sizing: border-box; outline: none; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; color: white; background: var(--main); text-transform: uppercase; transition: 0.3s; }
-        
-        /* Ledger Filters */
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; background: var(--main); text-transform: uppercase; }
+        .search-box { position: sticky; top: -15px; background: var(--bg); padding: 10px 0; z-index: 10; }
         .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; }
-        .f-btn { flex: 1; padding: 8px; border: 1px solid var(--main); background: white; border-radius: 20px; font-size: 11px; font-weight: bold; color: var(--main); cursor: pointer; }
+        .f-btn { flex: 1; padding: 8px; border: 1px solid var(--main); background: white; border-radius: 20px; font-size: 11px; font-weight: bold; color: var(--main); }
         .f-btn.active { background: var(--main); color: white; }
-
         .tab-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); }
         .tab-item { flex: 1; padding: 15px; text-align: center; font-size: 13px; font-weight: bold; color: #888; }
         .tab-item.active { color: var(--main); border-top: 3px solid var(--main); }
-        
         #emiModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10001; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -48,10 +38,10 @@
 
 <div id="loginScreen">
     <div class="login-box">
-        <h2 style="color:var(--main)">OWNER LOGIN</h2>
+        <h2 style="color:var(--main); margin-bottom:20px;">OWNER LOGIN</h2>
         <input type="text" id="user" placeholder="Shop ID">
         <input type="password" id="pass" placeholder="Password">
-        <button class="btn" onclick="handleLogin()">Login & Install</button>
+        <button class="btn" onclick="handleLogin()">Login & Enter</button>
         <button id="pwaBtn" class="btn" style="background:#ffcc00; color:black; margin-top:10px; display:none;" onclick="triggerInstall()">📲 INSTALL APP</button>
     </div>
 </div>
@@ -64,40 +54,28 @@
 
     <div class="container" id="billingPage">
         <div class="card">
-            <label>CUSTOMER DETAILS</label>
+            <h3 style="margin-top:0;">New Bill</h3>
             <input type="text" id="cName" placeholder="Customer Name">
             <input type="number" id="cPhone" placeholder="WhatsApp Number">
-            <textarea id="cAddr" placeholder="Address" rows="1"></textarea>
-            
-            <label>DEVICE DETAILS</label>
-            <select id="brand" onchange="toggleBrand()">
-                <option value="">Select Brand</option>
-                <option>iPhone</option><option>Samsung</option><option>Vivo</option>
-                <option>Oppo</option><option>Realme</option><option>Redmi</option>
-                <option>Motorola</option><option value="Other">Other (Type Manually)</option>
-            </select>
-            <input type="text" id="otherBrand" placeholder="Enter Brand Name" style="display:none;">
-            <input type="text" id="modelNo" placeholder="Model Name/Number">
-            <input type="text" id="imei" placeholder="IMEI Number">
-
-            <label>PAYMENT (EMI CALCULATOR)</label>
+            <select id="brand"><option>iPhone</option><option>Samsung</option><option>Vivo</option><option>Oppo</option><option>Realme</option><option>Other</option></select>
+            <input type="text" id="modelNo" placeholder="Model & IMEI Number">
             <div style="display:flex; gap:10px;">
-                <input type="number" id="total" placeholder="Total Price" onkeyup="calc()">
-                <input type="number" id="paid" placeholder="Advance Paid" onkeyup="calc()">
+                <input type="number" id="total" placeholder="Total (₹)" onkeyup="calc()">
+                <input type="number" id="paid" placeholder="Paid (₹)" onkeyup="calc()">
             </div>
-            <div style="background: #fff5f5; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 12px;">
-                <span style="color: #555; font-size: 12px;">PENDING AMOUNT:</span><br>
-                <b style="color: var(--red); font-size: 22px;">₹<span id="bal">0</span></b>
-            </div>
-            <button class="btn" onclick="saveBill()">SAVE & PRINT INVOICE</button>
+            <div style="text-align:right; font-weight:bold; color:var(--red); margin-bottom:10px;">Balance Due: ₹<span id="bal">0</span></div>
+            <button class="btn" onclick="saveBill()">Print & WhatsApp Share</button>
         </div>
     </div>
 
     <div class="container" id="ledgerPage" style="display:none;">
+        <div class="search-box">
+            <input type="text" id="ledgerSearch" placeholder="🔍 Search Customer..." onkeyup="renderLedger()" style="border:2px solid var(--main)">
+        </div>
         <div class="filter-bar">
             <button class="f-btn active" id="fAll" onclick="filterLedger('all')">ALL</button>
-            <button class="f-btn" id="fPending" onclick="filterLedger('pending')">PENDING EMI</button>
-            <button class="f-btn" id="fPaid" onclick="filterLedger('paid')">FULL PAID</button>
+            <button class="f-btn" id="fPending" onclick="filterLedger('pending')">PENDING</button>
+            <button class="f-btn" id="fPaid" onclick="filterLedger('paid')">PAID</button>
         </div>
         <div id="ledgerList"></div>
     </div>
@@ -109,37 +87,37 @@
 </div>
 
 <div id="emiModal">
-    <div class="card" style="width:85%; max-width:350px;">
-        <h3 id="mName" style="margin:0 0 10px 0;">Customer Name</h3>
-        <div id="mHistory" style="font-size:12px; margin-bottom:15px; color:#666;"></div>
-        <input type="number" id="addAmt" placeholder="Add Amount (₹)">
-        <button class="btn" style="background:var(--green)" onclick="updatePayment()">ADD PAYMENT & PRINT</button>
-        <button class="btn" style="background:#888; margin-top:10px;" onclick="closeModal()">CLOSE</button>
+    <div class="card" style="width:85%; max-width:320px;">
+        <h3 id="mName" style="margin:0;">Update</h3>
+        <p id="mHistory" style="font-size:13px; color:#666;"></p>
+        <input type="number" id="addAmt" placeholder="Add Payment Amount (₹)">
+        <button class="btn" style="background:var(--green)" onclick="updatePayment()">Add & Print</button>
+        <button class="btn" style="background:#888; margin-top:5px;" onclick="closeModal()">Close</button>
     </div>
 </div>
 
 <script>
-    // BACKEND SETTINGS
-    const SHOP_CONFIG = {
-        nova1: {
-            name: "NOVA DIGITAL STORE",
-            pass: "nova123",
-            addr: "Shop No. 5, Main Circle, New Delhi",
-            contact: "+91 9876543210",
-            gst: "27AAAAA0000A1Z5",
-            watermark: "NOVA DIGITAL"
-        }
+    const SHOP_CONFIG = { 
+        nova1: { 
+            name: "NOVA DIGITAL WORLD", 
+            pass: "nova123", 
+            addr: "Main Market, Street No. 4, Mumbai", 
+            contact: "9876543210", 
+            gst: "27AAAAA0000A1Z5", 
+            watermark: "NOVA DIGITAL",
+            ig_id: "nova_digital_official"
+        } 
     };
 
     let currentStore = null, activeId = null, filterStatus = 'all', deferredPrompt;
 
-    // PWA Install Logic
+    // PWA Popup
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwaBtn').style.display = 'block'; });
-    async function triggerInstall() { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } }
+    function triggerInstall() { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } }
 
     function handleLogin() {
         let u = document.getElementById('user').value, p = document.getElementById('pass').value;
-        if(SHOP_CONFIG[u] && SHOP_CONFIG[u].pass === p) { localStorage.setItem('nova_user', u); startApp(u); } else { alert("Wrong ID/Password"); }
+        if(SHOP_CONFIG[u] && SHOP_CONFIG[u].pass === p) { localStorage.setItem('nova_user', u); startApp(u); } else { alert("Wrong ID/Password!"); }
     }
 
     function startApp(u) {
@@ -148,7 +126,6 @@
         setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleString(); }, 1000);
     }
 
-    function toggleBrand() { document.getElementById('otherBrand').style.display = (document.getElementById('brand').value === 'Other' ? 'block' : 'none'); }
     function calc() { document.getElementById('bal').innerText = (document.getElementById('total').value || 0) - (document.getElementById('paid').value || 0); }
 
     function tab(x) {
@@ -160,39 +137,37 @@
     }
 
     function saveBill() {
-        let name = document.getElementById('cName').value, tot = parseFloat(document.getElementById('total').value);
-        if(!name || !tot) return alert("Fill Name and Total Price!");
         let db = JSON.parse(localStorage.getItem('db_'+currentStore)) || [];
-        let brand = document.getElementById('brand').value === 'Other' ? document.getElementById('otherBrand').value : document.getElementById('brand').value;
-        let entry = {
-            id: Date.now(), name, phone: document.getElementById('cPhone').value, addr: document.getElementById('cAddr').value,
-            device: brand + " " + document.getElementById('modelNo').value, imei: document.getElementById('imei').value,
-            total: tot, payments: [{amt: parseFloat(document.getElementById('paid').value || 0), date: new Date().toLocaleString()}],
-            date: new Date().toLocaleDateString()
+        let phone = document.getElementById('cPhone').value;
+        let entry = { 
+            id: Date.now(), 
+            name: document.getElementById('cName').value, 
+            phone: phone,
+            total: parseFloat(document.getElementById('total').value), 
+            payments: [{amt: parseFloat(document.getElementById('paid').value || 0), date: new Date().toLocaleDateString()}], 
+            date: new Date().toLocaleDateString(), 
+            device: document.getElementById('brand').value + " " + document.getElementById('modelNo').value 
         };
         db.push(entry); localStorage.setItem('db_'+currentStore, JSON.stringify(db));
-        printPDF(entry); tab('ledger');
+        printPDF(entry);
+        setTimeout(() => { window.open(`https://wa.me/91${phone}?text=Hello ${entry.name}, Your bill for ${entry.device} has been generated.`, '_blank'); }, 2000);
+        tab('ledger');
     }
 
-    function filterLedger(s) { 
-        filterStatus = s; 
-        document.getElementById('fAll').classList.toggle('active', s=='all');
-        document.getElementById('fPending').classList.toggle('active', s=='pending');
-        document.getElementById('fPaid').classList.toggle('active', s=='paid');
-        renderLedger(); 
-    }
+    function filterLedger(s) { filterStatus = s; renderLedger(); }
 
     function renderLedger() {
-        let db = JSON.parse(localStorage.getItem('db_'+currentStore)) || [], list = document.getElementById('ledgerList');
+        let db = JSON.parse(localStorage.getItem('db_'+currentStore)) || [];
+        let search = document.getElementById('ledgerSearch').value.toLowerCase();
+        let list = document.getElementById('ledgerList');
         list.innerHTML = "";
         db.reverse().forEach(i => {
             let tp = i.payments.reduce((a, b) => a + b.amt, 0), bal = i.total - tp;
+            if(!i.name.toLowerCase().includes(search)) return;
             if(filterStatus === 'pending' && bal <= 0) return;
             if(filterStatus === 'paid' && bal > 0) return;
-            list.innerHTML += `<div class="card" onclick="openEmi(${i.id})" style="border-left: 6px solid ${bal<=0?'var(--green)':'var(--red)'}">
-                <div style="display:flex; justify-content:space-between;">
-                    <b>${i.name}</b> <span>₹${bal.toFixed(0)}</span>
-                </div>
+            list.innerHTML += `<div class="card" onclick="openEmi(${i.id})" style="border-left-color:${bal<=0?'var(--green)':'var(--red)'}">
+                <div style="display:flex; justify-content:space-between"><b>${i.name}</b> <span>₹${bal}</span></div>
                 <small>${i.device} | ${i.date}</small>
             </div>`;
         });
@@ -200,59 +175,64 @@
 
     function openEmi(id) {
         activeId = id; let db = JSON.parse(localStorage.getItem('db_'+currentStore)), c = db.find(x => x.id === id);
-        document.getElementById('mName').innerText = c.name;
         let tp = c.payments.reduce((a, b) => a + b.amt, 0);
-        document.getElementById('mHistory').innerHTML = `Total: ₹${c.total} | Paid: ₹${tp} | <b>Balance: ₹${c.total - tp}</b>`;
+        document.getElementById('mName').innerText = c.name;
+        document.getElementById('mHistory').innerText = `Total: ₹${c.total} | Balance: ₹${c.total - tp}`;
         document.getElementById('emiModal').style.display = 'flex';
     }
-
+    
+    function closeModal() { document.getElementById('emiModal').style.display = 'none'; }
+    
     function updatePayment() {
         let amt = parseFloat(document.getElementById('addAmt').value || 0), db = JSON.parse(localStorage.getItem('db_'+currentStore)), idx = db.findIndex(x => x.id === activeId);
-        if(amt <= 0) return;
         db[idx].payments.push({amt, date: new Date().toLocaleString()});
         localStorage.setItem('db_'+currentStore, JSON.stringify(db));
         printPDF(db[idx]); closeModal(); renderLedger();
     }
 
-    function closeModal() { document.getElementById('emiModal').style.display = 'none'; document.getElementById('addAmt').value=''; }
-
     function printPDF(c) {
         const { jsPDF } = window.jspdf; const doc = new jsPDF(); let conf = SHOP_CONFIG[currentStore];
         let tp = c.payments.reduce((a, b) => a + b.amt, 0), bal = c.total - tp;
 
-        // Watermark Center
-        doc.setTextColor(240); doc.setFontSize(55); doc.text(conf.watermark, 105, 150, { align: 'center', angle: 45 });
+        // Watermark
+        doc.setTextColor(242); doc.setFontSize(50); doc.text(conf.watermark, 105, 150, {align:'center', angle:45});
 
         // Header
         doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(197, 160, 89); doc.setFontSize(22); doc.text(conf.name, 105, 18, {align: 'center'});
-        doc.setTextColor(255); doc.setFontSize(9); doc.text(`${conf.addr} | GST: ${conf.gst}`, 105, 28, {align: 'center'});
-        doc.text(`Contact: ${conf.contact}`, 105, 33, {align: 'center'});
+        doc.setTextColor(197, 160, 89); doc.setFontSize(22); doc.text(conf.name, 105, 18, {align:'center'});
+        doc.setTextColor(255); doc.setFontSize(9); doc.text(`${conf.addr} | GST: ${conf.gst}`, 105, 28, {align:'center'});
 
-        // Customer & Bill Details
-        doc.setTextColor(0); doc.setFontSize(10);
+        // Customer Info
+        doc.setTextColor(0); doc.setFontSize(11);
         doc.text(`Bill No: ${c.id}`, 20, 50); doc.text(`Date: ${c.date}`, 150, 50);
-        doc.setFont("helvetica", "bold"); doc.text(`Customer: ${c.name} (${c.phone})`, 20, 60);
-        doc.setFont("helvetica", "normal"); doc.text(`Address: ${c.addr}`, 20, 66);
-        
-        doc.setFillColor(245); doc.rect(20, 75, 170, 30, 'F');
-        doc.text(`Item: ${c.device}`, 25, 85); doc.text(`IMEI: ${c.imei}`, 25, 95);
-
-        // Success / Pending Stamp
-        doc.setLineWidth(1);
-        if(bal <= 0) { doc.setDrawColor(27, 67, 50); doc.setTextColor(27, 67, 50); doc.rect(150, 80, 30, 15); doc.text("PAID", 158, 90); }
-        else { doc.setDrawColor(208, 0, 0); doc.setTextColor(208, 0, 0); doc.rect(150, 80, 30, 15); doc.text("EMI", 160, 90); }
+        doc.text(`Customer: ${c.name}`, 20, 60); doc.text(`Contact: ${c.phone}`, 20, 66);
+        doc.text(`Device: ${c.device}`, 20, 72);
 
         // Payment Table
-        doc.setTextColor(0); doc.setFontSize(11);
-        doc.text("Payment Summary:", 20, 120);
-        doc.text(`Total Price:`, 20, 130); doc.text(`Rs. ${c.total.toFixed(2)}`, 150, 130, {align:'right'});
-        doc.text(`Total Paid:`, 20, 140); doc.text(`Rs. ${tp.toFixed(2)}`, 150, 140, {align:'right'});
-        doc.line(20, 145, 190, 145);
-        doc.setFontSize(14); doc.text(`BALANCE DUE:`, 20, 155); doc.text(`Rs. ${bal.toFixed(2)}`, 150, 155, {align:'right'});
+        doc.rect(20, 80, 170, 40);
+        doc.text(`Total Price:`, 25, 90); doc.text(`Rs. ${c.total}`, 185, 90, {align:'right'});
+        doc.text(`Total Paid:`, 25, 100); doc.text(`Rs. ${tp}`, 185, 100, {align:'right'});
+        doc.setFontSize(14); doc.text(`BALANCE DUE:`, 25, 112); doc.text(`Rs. ${bal}`, 185, 112, {align:'right'});
 
-        doc.setFontSize(8); doc.text("This is a computer generated invoice.", 105, 280, {align:'center'});
-        doc.save(`${c.name}_Bill.pdf`);
+        // Status Stamp
+        doc.setLineWidth(1); doc.setDrawColor(bal<=0?27:208, bal<=0?67:0, 0);
+        doc.rect(150, 125, 30, 15); doc.text(bal<=0?"PAID":"EMI", 158, 135);
+
+        // QR Code & Instagram
+        let qrBox = document.createElement('div');
+        new QRCode(qrBox, { text: "https://www.instagram.com/"+conf.ig_id, width: 80, height: 80 });
+        setTimeout(() => {
+            let canvas = qrBox.querySelector('canvas');
+            if(canvas) {
+                doc.addImage(canvas.toDataURL("image/png"), 'PNG', 20, 220, 30, 30);
+                doc.setFontSize(9); doc.text("Follow for latest updates", 20, 255);
+                doc.text("@"+conf.ig_id, 20, 260);
+            }
+            // Signatures
+            doc.line(20, 200, 70, 200); doc.text("Customer Signature", 25, 205);
+            doc.line(140, 200, 190, 200); doc.text("Owner Signature", 145, 205);
+            doc.save(`${c.name}_Bill.pdf`);
+        }, 500);
     }
 
     window.onload = () => { if(localStorage.getItem('nova_user')) startApp(localStorage.getItem('nova_user')); };
