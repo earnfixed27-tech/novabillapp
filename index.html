@@ -33,6 +33,7 @@
         .tab-item { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: #888; }
         .tab-item.active { color: var(--main); border-top: 3px solid var(--main); }
         #emiModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10001; align-items: center; justify-content: center; }
+        .bal-txt { text-align:right; font-weight:bold; color:var(--red); margin: 5px 0; }
     </style>
 </head>
 <body>
@@ -65,22 +66,19 @@
                 <input type="number" id="total" placeholder="Total (Rs)" onkeyup="calc()">
                 <input type="number" id="paid" placeholder="Paid (Rs)" onkeyup="calc()">
             </div>
-            <p style="text-align:right; font-weight:bold; color:red;">Balance: Rs. <span id="bal">0</span></p>
+            <p class="bal-txt">Balance: Rs. <span id="bal">0</span></p>
             <button class="btn" onclick="saveBill()">Save & Print Bill</button>
         </div>
     </div>
 
     <div class="container" id="ledgerPage" style="display:none;">
-        <input type="text" id="ledgerSearch" placeholder="🔍 Search Customer..." onkeyup="renderLedger()" style="border:2px solid var(--main)">
-        
+        <input type="text" id="ledgerSearch" placeholder="🔍 Search Customer or IMEI..." onkeyup="renderLedger()" style="border:2px solid var(--main)">
         <div class="filter-bar">
             <button class="f-btn active" id="btnAll" onclick="setFilter('all')">ALL</button>
             <button class="f-btn" id="btnPending" onclick="setFilter('pending')">PENDING</button>
             <button class="f-btn" id="btnPaid" onclick="setFilter('paid')">FULL PAID</button>
         </div>
-
-        <button class="btn" style="background:var(--green); margin-bottom:15px; font-size:12px;" onclick="downloadFullReport()">📋 DOWNLOAD FULL LEDGER (PDF)</button>
-        <div id="ledgerList"></div>
+        <div id="ledgerList">Loading Data...</div>
     </div>
 
     <div class="tab-bar">
@@ -91,7 +89,7 @@
 
 <div id="emiModal">
     <div class="card" style="width:85%; max-width:320px;">
-        <h3 id="mName">Update</h3>
+        <h3 id="mName" style="margin-top:0;">Update Payment</h3>
         <p id="mHistory" style="font-size:13px; color:#666;"></p>
         <input type="number" id="addAmt" placeholder="Add Amount (Rs)">
         <button class="btn" style="background:var(--green)" onclick="updatePayment()">Update & Print</button>
@@ -99,136 +97,165 @@
     </div>
 </div>
 
-<script>
-    const SHOP_CONFIG = { 
-        sairaj: { 
-            name: "SAIRAJ MOBILE SHOPE", pass: "sairaj7397", 
-            addr: "Rajdhani Chauk, Mangrulpir, Washim (444403)", 
-            contact: "+91 73979 94546", watermark: "SAIRAJ MOBILE", ig_id: "rairamobile" 
-        } 
+<script type="module">
+    // --- FIREBASE INTEGRATION ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDKpOGpcFE1hiSGvuqLwIFtwHJZdxTSuTI",
+        authDomain: "aaosai-3b241.firebaseapp.com",
+        databaseURL: "https://aaosai-3b241-default-rtdb.firebaseio.com",
+        projectId: "aaosai-3b241",
+        storageBucket: "aaosai-3b241.firebasestorage.app",
+        messagingSenderId: "731218123050",
+        appId: "1:731218123050:web:3758dddce80efd5d8d6653",
+        measurementId: "G-MPWKN7ZKYS"
     };
 
-    let currentStore = null, activeId = null, deferredPrompt, currentFilter = 'all';
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
-    async function triggerInstall() { 
-        if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } 
-        else { alert("Open in Chrome and use 'Add to Home Screen'"); }
-    }
+    const SHOP_CONFIG = { sairaj: { name: "SAIRAJ MOBILE SHOPE", pass: "sairaj7397", addr: "Rajdhani Chauk, Mangrulpir, Washim (444403)", contact: "+91 73979 94546", watermark: "SAIRAJ MOBILE", ig_id: "rairamobile" } };
+    let currentStore = null, activeId = null, currentFilter = 'all', deferredPrompt;
 
-    function handleLogin() {
+    // LOGIN & AUTH
+    window.handleLogin = () => {
         let u = document.getElementById('user').value, p = document.getElementById('pass').value;
-        if(SHOP_CONFIG[u] && SHOP_CONFIG[u].pass === p) { localStorage.setItem('sairaj_user', u); startApp(u); } else { alert("Invalid!"); }
-    }
+        if(SHOP_CONFIG[u] && SHOP_CONFIG[u].pass === p) { localStorage.setItem('sairaj_user', u); startApp(u); } else { alert("Invalid Credentials!"); }
+    };
 
-    function startApp(u) {
+    window.startApp = (u) => {
         currentStore = u; document.getElementById('loginScreen').style.display = 'none'; document.getElementById('mainApp').style.display = 'flex';
         document.getElementById('shopDisp').innerText = SHOP_CONFIG[u].name;
         setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleString(); }, 1000);
-    }
+        renderLedger();
+    };
 
-    function calc() { document.getElementById('bal').innerText = (document.getElementById('total').value || 0) - (document.getElementById('paid').value || 0); }
-
-    function tab(x) {
+    // UI CONTROL
+    window.calc = () => { document.getElementById('bal').innerText = (document.getElementById('total').value || 0) - (document.getElementById('paid').value || 0); };
+    window.tab = (x) => {
         document.getElementById('billingPage').style.display = (x=='billing'?'block':'none');
         document.getElementById('ledgerPage').style.display = (x=='ledger'?'block':'none');
         document.getElementById('t1').classList.toggle('active', x=='billing');
         document.getElementById('t2').classList.toggle('active', x=='ledger');
-        if(x=='ledger') renderLedger();
-    }
-
-    function setFilter(f) {
+    };
+    window.setFilter = (f) => {
         currentFilter = f;
         document.getElementById('btnAll').classList.toggle('active', f=='all');
         document.getElementById('btnPending').classList.toggle('active', f=='pending');
         document.getElementById('btnPaid').classList.toggle('active', f=='paid');
         renderLedger();
-    }
+    };
 
-    function saveBill() {
-        let db = JSON.parse(localStorage.getItem('db_'+currentStore)) || [];
-        let phone = document.getElementById('cPhone').value;
-        let entry = { 
-            id: Date.now(), name: document.getElementById('cName').value, phone: phone, addr: document.getElementById('cAddr').value,
-            brand: document.getElementById('brand').value, model: document.getElementById('modelName').value, imei: document.getElementById('imeiNo').value,
-            total: parseFloat(document.getElementById('total').value), payments: [{amt: parseFloat(document.getElementById('paid').value || 0), date: new Date().toLocaleString()}], date: new Date().toLocaleString()
+    // BILLING & DATABASE
+    window.saveBill = async () => {
+        const total = parseFloat(document.getElementById('total').value || 0);
+        const paid = parseFloat(document.getElementById('paid').value || 0);
+        if(!total || !document.getElementById('cName').value) { alert("Enter Name & Total!"); return; }
+
+        const entry = {
+            name: document.getElementById('cName').value,
+            phone: document.getElementById('cPhone').value,
+            addr: document.getElementById('cAddr').value,
+            brand: document.getElementById('brand').value,
+            model: document.getElementById('modelName').value,
+            imei: document.getElementById('imeiNo').value,
+            total: total,
+            payments: [{amt: paid, date: new Date().toLocaleString()}],
+            date: new Date().toLocaleString(),
+            timestamp: Date.now()
         };
-        db.push(entry); localStorage.setItem('db_'+currentStore, JSON.stringify(db));
+
+        const billRef = push(ref(db, `shops/${currentStore}/bills`));
+        await set(billRef, entry);
         printPDF(entry);
-        setTimeout(() => { window.open(`https://wa.me/91${phone}?text=Hello ${entry.name}, your bill from SAIRAJ MOBILE SHOPE is ready.`, '_blank'); }, 2000);
+        alert("Success! Bill Saved to Cloud.");
+        clearForm();
         tab('ledger');
-    }
+    };
 
-    function renderLedger() {
-        let db = JSON.parse(localStorage.getItem('db_'+currentStore)) || [], search = document.getElementById('ledgerSearch').value.toLowerCase();
-        let list = document.getElementById('ledgerList'); list.innerHTML = "";
-        db.reverse().forEach(i => {
-            let tp = i.payments.reduce((a, b) => a + b.amt, 0), bal = i.total - tp;
-            if(!i.name.toLowerCase().includes(search)) return;
+    window.renderLedger = () => {
+        const list = document.getElementById('ledgerList');
+        const search = document.getElementById('ledgerSearch').value.toLowerCase();
+        onValue(ref(db, `shops/${currentStore}/bills`), (snapshot) => {
+            list.innerHTML = "";
+            const data = snapshot.val();
+            if(!data) { list.innerHTML = "No Records Found."; return; }
             
-            // Filter Logic
-            if(currentFilter === 'pending' && bal <= 0) return;
-            if(currentFilter === 'paid' && bal > 0) return;
+            Object.keys(data).reverse().forEach(key => {
+                const i = data[key];
+                const tp = i.payments.reduce((a, b) => a + b.amt, 0), bal = i.total - tp;
+                if(!i.name.toLowerCase().includes(search) && !i.imei.includes(search)) return;
+                if(currentFilter === 'pending' && bal <= 0) return;
+                if(currentFilter === 'paid' && bal > 0) return;
 
-            list.innerHTML += `<div class="card" onclick="openEmi(${i.id})" style="border-left-color:${bal<=0?'var(--green)':'var(--red)'}">
-                <b>${i.name}</b> <span style="float:right">Rs. ${bal}</span><br><small>${i.brand} | ${i.date}</small>
-            </div>`;
+                const div = document.createElement('div');
+                div.className = "card";
+                div.style.borderLeftColor = bal <= 0 ? 'var(--green)' : 'var(--red)';
+                div.onclick = () => openEmi(key, i);
+                div.innerHTML = `<b>${i.name}</b> <span style="float:right">Rs. ${bal}</span><br><small>${i.brand} | ${i.date}</small>`;
+                list.appendChild(div);
+            });
         });
-    }
+    };
 
-    function openEmi(id) {
-        activeId = id; let db = JSON.parse(localStorage.getItem('db_'+currentStore)), c = db.find(x => x.id === id);
-        let tp = c.payments.reduce((a, b) => a + b.amt, 0);
-        document.getElementById('mName').innerText = c.name;
-        document.getElementById('mHistory').innerText = `Total: ${c.total} | Balance: ${c.total - tp}`;
+    window.openEmi = (key, data) => {
+        activeId = key; window.currentActiveData = data;
+        const tp = data.payments.reduce((a, b) => a + b.amt, 0);
+        document.getElementById('mName').innerText = data.name;
+        document.getElementById('mHistory').innerText = `Total: ${data.total} | Balance: ${data.total - tp}`;
         document.getElementById('emiModal').style.display = 'flex';
+    };
+
+    window.updatePayment = async () => {
+        const amt = parseFloat(document.getElementById('addAmt').value || 0);
+        const data = window.currentActiveData;
+        data.payments.push({amt, date: new Date().toLocaleString()});
+        await update(ref(db, `shops/${currentStore}/bills/${activeId}`), { payments: data.payments });
+        printPDF(data); closeModal();
+    };
+
+    window.closeModal = () => { document.getElementById('emiModal').style.display = 'none'; };
+
+    function clearForm() {
+        ['cName','cPhone','cAddr','modelName','imeiNo','total','paid'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('bal').innerText = '0';
     }
 
-    function updatePayment() {
-        let amt = parseFloat(document.getElementById('addAmt').value || 0), db = JSON.parse(localStorage.getItem('db_'+currentStore)), idx = db.findIndex(x => x.id === activeId);
-        db[idx].payments.push({amt, date: new Date().toLocaleString()});
-        localStorage.setItem('db_'+currentStore, JSON.stringify(db));
-        printPDF(db[idx]); closeModal(); renderLedger();
-    }
-
-    function closeModal() { document.getElementById('emiModal').style.display = 'none'; }
-
-    function downloadFullReport() {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF(); let db = JSON.parse(localStorage.getItem('db_'+currentStore)) || [];
-        doc.setFontSize(16); doc.text("FULL LEDGER REPORT - SAIRAJ MOBILE", 105, 15, {align:'center'});
-        let y = 30;
-        db.forEach((i, idx) => {
-            let tp = i.payments.reduce((a, b) => a + b.amt, 0);
-            doc.setFontSize(10);
-            doc.text(`${idx+1}. Name: ${i.name} | Device: ${i.brand} | Bal: Rs.${i.total-tp} | Date: ${i.date}`, 15, y);
-            y += 10; if (y > 280) { doc.addPage(); y = 20; }
-        });
-        doc.save("Full_Ledger_Report.pdf");
-    }
-
+    // PDF GENERATION
     function printPDF(c) {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF(); let conf = SHOP_CONFIG[currentStore];
-        let tp = c.payments.reduce((a, b) => a + b.amt, 0), bal = c.total - tp;
-        doc.setTextColor(242); doc.setFontSize(40); doc.text(conf.watermark, 105, 150, {align:'center', angle:45});
-        doc.setFillColor(0, 31, 63); doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(197, 160, 89); doc.setFontSize(22); doc.text(conf.name, 105, 18, {align:'center'});
-        doc.setTextColor(255); doc.setFontSize(8); doc.text(conf.addr + " | " + conf.contact, 105, 28, {align:'center'});
-        doc.setTextColor(0); doc.setFontSize(10);
-        doc.text(`Bill No: ${c.id}`, 20, 50); doc.text(`Date: ${c.date}`, 140, 50);
-        doc.text(`Customer: ${c.name} (${c.phone})`, 20, 60); doc.text(`Address: ${c.addr}`, 20, 66);
-        doc.text(`Device: ${c.brand} ${c.modelName || ''}`, 20, 75); doc.text(`IMEI: ${c.imeiNo || ''}`, 20, 81);
-        doc.rect(20, 90, 170, 35); doc.text(`Total Price: Rs. ${c.total}`, 25, 100); doc.text(`Paid: Rs. ${tp}`, 25, 110);
-        doc.setFontSize(14); doc.text(`BALANCE DUE: Rs. ${bal}`, 25, 120);
+        const { jsPDF } = window.jspdf; const docPdf = new jsPDF(); let conf = SHOP_CONFIG[currentStore];
+        const tp = c.payments.reduce((a, b) => a + b.amt, 0), bal = c.total - tp;
+        
+        docPdf.setTextColor(242); docPdf.setFontSize(40); docPdf.text(conf.watermark, 105, 150, {align:'center', angle:45});
+        docPdf.setFillColor(0, 31, 63); docPdf.rect(0, 0, 210, 40, 'F');
+        docPdf.setTextColor(197, 160, 89); docPdf.setFontSize(22); docPdf.text(conf.name, 105, 18, {align:'center'});
+        docPdf.setTextColor(255); docPdf.setFontSize(8); docPdf.text(conf.addr + " | " + conf.contact, 105, 28, {align:'center'});
+        
+        docPdf.setTextColor(0); docPdf.setFontSize(10);
+        docPdf.text(`Bill No: ${c.timestamp || '001'}`, 20, 50); docPdf.text(`Date: ${c.date}`, 140, 50);
+        docPdf.text(`Customer: ${c.name} (${c.phone})`, 20, 60); docPdf.text(`Address: ${c.addr}`, 20, 66);
+        docPdf.text(`Device: ${c.brand} ${c.model || ''}`, 20, 75); docPdf.text(`IMEI: ${c.imei || ''}`, 20, 81);
+        
+        docPdf.rect(20, 90, 170, 35); docPdf.text(`Total Price: Rs. ${c.total}`, 25, 100); docPdf.text(`Paid Amount: Rs. ${tp}`, 25, 110);
+        docPdf.setFontSize(14); docPdf.text(`BALANCE DUE: Rs. ${bal}`, 25, 120);
+
         let qrBox = document.createElement('div');
         new QRCode(qrBox, { text: "https://www.instagram.com/"+conf.ig_id, width: 80, height: 80 });
         setTimeout(() => {
             let canvas = qrBox.querySelector('canvas');
-            if(canvas) { doc.addImage(canvas.toDataURL("image/png"), 'PNG', 20, 230, 30, 30); doc.text("Follow @"+conf.ig_id, 20, 265); }
-            doc.line(20, 210, 70, 210); doc.text("Customer Sign", 25, 215);
-            doc.line(140, 210, 190, 210); doc.text("Owner Sign", 145, 215);
-            doc.save(`${c.name}_Bill.pdf`);
+            if(canvas) { docPdf.addImage(canvas.toDataURL("image/png"), 'PNG', 20, 230, 30, 30); docPdf.text("Follow @"+conf.ig_id, 20, 265); }
+            docPdf.line(20, 210, 70, 210); docPdf.text("Customer Sign", 25, 215);
+            docPdf.line(140, 210, 190, 210); docPdf.text("Owner Sign", 145, 215);
+            docPdf.save(`${c.name}_Bill.pdf`);
         }, 500);
     }
+
+    // PWA INSTALL
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+    window.triggerInstall = async () => { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } else { alert("Go to Chrome Menu > Install App"); } };
+
     window.onload = () => { if(localStorage.getItem('sairaj_user')) startApp(localStorage.getItem('sairaj_user')); };
 </script>
 </body>
