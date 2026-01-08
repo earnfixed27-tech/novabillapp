@@ -4,101 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }</script>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#001f3f">
-    <title>Sairaj Mobile Shope</title>
+    <title>AAO SAI MOBILE | Premium Suite</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        :root { --main: #001f3f; --gold: #c5a059; --red: #d00000; --green: #1b4332; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 0; height: 100vh; overflow: hidden; }
-        #loginScreen { position: fixed; inset: 0; background: var(--main); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; text-align: center; }
-        #mainApp { display: none; height: 100vh; flex-direction: column; }
-        .header { background: var(--main); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--gold); padding-top: env(safe-area-inset-top); }
-        .container { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 90px; }
-        .card { background: white; padding: 18px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-left: 6px solid var(--main); }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 12px; font-size: 15px; box-sizing: border-box; outline: none; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: white; background: var(--main); text-transform: uppercase; }
-        
-        .filter-bar { display: flex; gap: 5px; margin-bottom: 15px; }
-        .f-btn { flex: 1; padding: 8px; font-size: 10px; border: 1px solid var(--main); background: white; border-radius: 20px; font-weight: bold; color: var(--main); cursor: pointer; }
-        .f-btn.active { background: var(--main); color: white; }
-
-        .tab-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom); }
-        .tab-item { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: #888; }
-        .tab-item.active { color: var(--main); border-top: 3px solid var(--main); }
-        #emiModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:10001; align-items: center; justify-content: center; }
-        .bal-txt { text-align:right; font-weight:bold; color:var(--red); margin: 5px 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #0f172a; overflow-x: hidden; }
+        .glass-header { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); }
+        .premium-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; transition: 0.3s; }
+        .tab-active { background: #2563eb; color: white; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
+        #loginScreen { background: radial-gradient(circle at top right, #1e293b, #0f172a); }
     </style>
 </head>
-<body>
+<body class="no-scrollbar">
 
-<div id="loginScreen">
-    <div class="login-box">
-        <h2 style="color:var(--main); margin-bottom:10px;">SAIRAJ MOBILE</h2>
-        <input type="text" id="user" placeholder="Shop ID">
-        <input type="password" id="pass" placeholder="Password">
-        <button class="btn" onclick="handleLogin()">Login</button>
-        <button id="pwaBtn" class="btn" style="background:#ffcc00; color:black; margin-top:10px;" onclick="triggerInstall()">📲 INSTALL APP</button>
+<div id="loginScreen" class="fixed inset-0 z-[10000] flex items-center justify-center p-6">
+    <div class="w-full max-w-sm bg-white/10 backdrop-blur-xl p-8 rounded-[32px] border border-white/20 shadow-2xl text-center">
+        <h2 class="text-white text-2xl font-bold mb-2">AAO SAI MOBILE</h2>
+        <p class="text-slate-400 text-sm mb-8">Premium Cloud Billing</p>
+        <input type="text" id="user" placeholder="Shop ID" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl mb-4 text-white outline-none">
+        <input type="password" id="pass" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl mb-8 text-white outline-none">
+        <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-xl">SIGN IN</button>
     </div>
 </div>
 
-<div id="mainApp">
-    <div class="header">
-        <h2 id="shopDisp" style="margin:0; font-size: 16px;">SAIRAJ MOBILE SHOPE</h2>
-        <div id="timer" style="font-size: 10px; color: var(--gold);"></div>
-    </div>
+<div id="mainApp" class="hidden h-screen flex flex-col">
+    <header class="glass-header fixed top-0 w-full p-6 pt-12 text-white flex justify-between items-center z-50 rounded-b-[32px] shadow-2xl">
+        <h1 class="text-lg font-extrabold tracking-tight uppercase">AAO SAI MOBILE</h1>
+        <button onclick="handleLogout()" class="bg-red-500/20 text-red-400 px-4 py-2 rounded-xl text-xs font-bold border border-red-500/30">LOGOUT</button>
+    </header>
 
-    <div class="container" id="billingPage">
-        <div class="card">
-            <input type="text" id="cName" placeholder="Customer Name">
-            <input type="number" id="cPhone" placeholder="WhatsApp Number">
-            <textarea id="cAddr" placeholder="Customer Address" rows="1"></textarea>
-            <select id="brand"><option>iPhone</option><option>Samsung</option><option>Vivo</option><option>Oppo</option><option>Realme</option><option>Other</option></select>
-            <input type="text" id="modelName" placeholder="Model Name">
-            <input type="text" id="imeiNo" placeholder="IMEI Number">
-            <div style="display:flex; gap:10px;">
-                <input type="number" id="total" placeholder="Total (Rs)" onkeyup="calc()">
-                <input type="number" id="paid" placeholder="Paid (Rs)" onkeyup="calc()">
+    <main class="flex-1 overflow-y-auto p-4 pt-36 pb-28 no-scrollbar">
+        <div id="billingPage" class="space-y-6">
+            <div class="premium-card p-6 shadow-sm space-y-4 border border-blue-100">
+                <input type="text" id="cName" placeholder="Customer Name" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                <input type="number" id="cPhone" placeholder="WhatsApp Number" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                <div class="grid grid-cols-2 gap-3">
+                    <select id="brand" class="p-4 bg-slate-50 rounded-2xl font-semibold"><option>Vivo</option><option>Oppo</option><option>Samsung</option><option>iPhone</option></select>
+                    <input type="text" id="modelName" placeholder="Model" class="p-4 bg-slate-50 rounded-2xl outline-none">
+                </div>
+                <input type="text" id="imeiNo" placeholder="IMEI Number" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-900 p-4 rounded-[20px]">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Total</p>
+                        <input type="number" id="total" onkeyup="calc()" class="bg-transparent w-full text-white text-xl font-black outline-none" value="0">
+                    </div>
+                    <div class="bg-blue-600 p-4 rounded-[20px]">
+                        <p class="text-[10px] text-blue-200 font-bold uppercase">Paid</p>
+                        <input type="number" id="paid" onkeyup="calc()" class="bg-transparent w-full text-white text-xl font-black outline-none" value="0">
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-300">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">EMI Setup (Optional)</p>
+                    <div class="flex gap-2">
+                        <input type="number" id="emiAmt" placeholder="EMI Amt (e.g. 1000)" class="flex-1 p-2 bg-white rounded-lg text-sm border">
+                        <input type="number" id="emiMonths" placeholder="Months" class="w-20 p-2 bg-white rounded-lg text-sm border">
+                    </div>
+                </div>
+                <div class="bg-red-50 p-5 rounded-[24px] flex justify-between items-center border border-red-100">
+                    <span class="text-red-600 font-bold">Balance Due</span>
+                    <span class="text-2xl font-black text-red-600">₹<span id="bal">0</span></span>
+                </div>
+                <button onclick="saveBill()" class="w-full bg-blue-600 text-white py-5 rounded-[24px] font-extrabold text-lg shadow-2xl active:scale-95 transition-all">GENERATE & SEND WHATSAPP</button>
             </div>
-            <p class="bal-txt">Balance: Rs. <span id="bal">0</span></p>
-            <button class="btn" onclick="saveBill()">Save & Print Bill</button>
         </div>
-    </div>
 
-    <div class="container" id="ledgerPage" style="display:none;">
-        <input type="text" id="ledgerSearch" placeholder="🔍 Search Customer or IMEI..." onkeyup="renderLedger()" style="border:2px solid var(--main)">
-        <div class="filter-bar">
-            <button class="f-btn active" id="btnAll" onclick="setFilter('all')">ALL</button>
-            <button class="f-btn" id="btnPending" onclick="setFilter('pending')">PENDING</button>
-            <button class="f-btn" id="btnPaid" onclick="setFilter('paid')">FULL PAID</button>
+        <div id="ledgerPage" class="hidden space-y-4">
+            <input type="text" id="ledgerSearch" onkeyup="renderLedger()" placeholder="Search Name or IMEI..." class="w-full p-5 rounded-3xl premium-card border-none shadow-md outline-none">
+            <div id="ledgerList" class="space-y-4"></div>
         </div>
-        <div id="ledgerList">Loading Data...</div>
-    </div>
+    </main>
 
-    <div class="tab-bar">
-        <div class="tab-item active" id="t1" onclick="tab('billing')">NEW BILL</div>
-        <div class="tab-item" id="t2" onclick="tab('ledger')">LEDGER</div>
-    </div>
+    <nav class="fixed bottom-6 left-6 right-6 h-20 glass-header rounded-[32px] flex items-center px-4 shadow-2xl z-50 border border-white/10">
+        <button onclick="tab('billing')" id="t1" class="flex-1 flex flex-col items-center justify-center tab-item tab-active h-14"><span class="text-[10px] font-black uppercase">Billing</span></button>
+        <button onclick="tab('ledger')" id="t2" class="flex-1 flex flex-col items-center justify-center tab-item text-slate-400 h-14"><span class="text-[10px] font-black uppercase">Ledger</span></button>
+    </nav>
 </div>
 
-<div id="emiModal">
-    <div class="card" style="width:85%; max-width:320px;">
-        <h3 id="mName" style="margin-top:0;">Update Payment</h3>
-        <p id="mHistory" style="font-size:13px; color:#666;"></p>
-        <input type="number" id="addAmt" placeholder="Add Amount (Rs)">
-        <button class="btn" style="background:var(--green)" onclick="updatePayment()">Update & Print</button>
-        <button class="btn" style="background:#888; margin-top:5px;" onclick="closeModal()">Close</button>
+<div id="emiModal" class="hidden fixed inset-0 z-[10001] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-6">
+    <div class="w-full max-w-sm bg-white rounded-[40px] p-8 shadow-2xl">
+        <h3 id="mName" class="text-2xl font-black text-slate-900 mb-1">Update</h3>
+        <p id="mHistory" class="text-sm text-slate-500 mb-6"></p>
+        <div class="flex gap-2 mb-6">
+            <button onclick="window.open('tel:' + window.currentActiveData.phone)" class="flex-1 bg-blue-100 text-blue-600 py-3 rounded-2xl font-bold">📞 CALL</button>
+            <button onclick="sendWhatsAppReminder()" class="flex-1 bg-green-100 text-green-600 py-3 rounded-2xl font-bold">💬 SMS</button>
+        </div>
+        <div class="space-y-4 mb-6">
+            <button onclick="addFixedEMI(1000)" id="autoEmiBtn" class="w-full bg-slate-100 text-slate-700 py-3 rounded-2xl font-bold border border-slate-200">➕ Add Monthly EMI (₹1000)</button>
+            <input type="number" id="addAmt" class="w-full p-4 bg-slate-50 rounded-2xl text-2xl font-black outline-none border" placeholder="Manual Amt">
+        </div>
+        <button onclick="updatePayment()" class="w-full bg-green-600 text-white py-5 rounded-3xl font-extrabold">UPDATE & PRINT PDF</button>
+        <button onclick="closeModal()" class="w-full py-4 text-slate-400 font-bold mt-2">Close</button>
     </div>
 </div>
 
 <script type="module">
-    // --- FIREBASE INTEGRATION ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -110,92 +113,66 @@
         storageBucket: "aaosai-3b241.firebasestorage.app",
         messagingSenderId: "731218123050",
         appId: "1:731218123050:web:3758dddce80efd5d8d6653",
-        measurementId: "G-MPWKN7ZKYS"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const SHOP_CONFIG = { sairaj: { name: "SAIRAJ MOBILE SHOPE", pass: "sairaj7397", addr: "Rajdhani Chauk, Mangrulpir, Washim (444403)", contact: "+91 73979 94546", watermark: "SAIRAJ MOBILE", ig_id: "rairamobile" } };
-    let currentStore = null, activeId = null, currentFilter = 'all', deferredPrompt;
+    const CONFIG = { aaosai: { name: "AAO SAI MOBILE", pass: "aaosai7143", addr: "Rathi Complex Maghe Shop Mangrulpir", contact: "9145217143" } };
+    let currentStore = 'aaosai', activeId = null;
 
-    // LOGIN & AUTH
     window.handleLogin = () => {
         let u = document.getElementById('user').value, p = document.getElementById('pass').value;
-        if(SHOP_CONFIG[u] && SHOP_CONFIG[u].pass === p) { localStorage.setItem('sairaj_user', u); startApp(u); } else { alert("Invalid Credentials!"); }
+        if(CONFIG[u] && CONFIG[u].pass === p) { localStorage.setItem('aaosai_user', u); startApp(u); } else { alert("Error!"); }
     };
+
+    window.handleLogout = () => { localStorage.removeItem('aaosai_user'); location.reload(); };
 
     window.startApp = (u) => {
-        currentStore = u; document.getElementById('loginScreen').style.display = 'none'; document.getElementById('mainApp').style.display = 'flex';
-        document.getElementById('shopDisp').innerText = SHOP_CONFIG[u].name;
-        setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleString(); }, 1000);
+        currentStore = u; document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
         renderLedger();
     };
 
-    // UI CONTROL
     window.calc = () => { document.getElementById('bal').innerText = (document.getElementById('total').value || 0) - (document.getElementById('paid').value || 0); };
     window.tab = (x) => {
-        document.getElementById('billingPage').style.display = (x=='billing'?'block':'none');
-        document.getElementById('ledgerPage').style.display = (x=='ledger'?'block':'none');
-        document.getElementById('t1').classList.toggle('active', x=='billing');
-        document.getElementById('t2').classList.toggle('active', x=='ledger');
-    };
-    window.setFilter = (f) => {
-        currentFilter = f;
-        document.getElementById('btnAll').classList.toggle('active', f=='all');
-        document.getElementById('btnPending').classList.toggle('active', f=='pending');
-        document.getElementById('btnPaid').classList.toggle('active', f=='paid');
-        renderLedger();
+        document.getElementById('billingPage').classList.toggle('hidden', x!='billing');
+        document.getElementById('ledgerPage').classList.toggle('hidden', x!='ledger');
+        document.getElementById('t1').classList.toggle('tab-active', x=='billing');
+        document.getElementById('t2').classList.toggle('tab-active', x=='ledger');
     };
 
-    // BILLING & DATABASE
     window.saveBill = async () => {
-        const total = parseFloat(document.getElementById('total').value || 0);
-        const paid = parseFloat(document.getElementById('paid').value || 0);
-        if(!total || !document.getElementById('cName').value) { alert("Enter Name & Total!"); return; }
-
+        const name = document.getElementById('cName').value, phone = document.getElementById('cPhone').value;
+        const total = parseFloat(document.getElementById('total').value || 0), paid = parseFloat(document.getElementById('paid').value || 0);
+        const emiAmt = document.getElementById('emiAmt').value || 1000;
+        
         const entry = {
-            name: document.getElementById('cName').value,
-            phone: document.getElementById('cPhone').value,
-            addr: document.getElementById('cAddr').value,
-            brand: document.getElementById('brand').value,
-            model: document.getElementById('modelName').value,
-            imei: document.getElementById('imeiNo').value,
-            total: total,
-            payments: [{amt: paid, date: new Date().toLocaleString()}],
-            date: new Date().toLocaleString(),
-            timestamp: Date.now()
+            name, phone, brand: document.getElementById('brand').value, model: document.getElementById('modelName').value,
+            imei: document.getElementById('imeiNo').value, total, emiSetting: emiAmt,
+            payments: [{amt: paid, date: new Date().toLocaleDateString()}],
+            date: new Date().toLocaleDateString(), timestamp: Date.now()
         };
 
-        const billRef = push(ref(db, `shops/${currentStore}/bills`));
-        await set(billRef, entry);
+        await set(push(ref(db, `shops/${currentStore}/bills`)), entry);
         printPDF(entry);
-        alert("Success! Bill Saved to Cloud.");
-        clearForm();
-        tab('ledger');
+
+        // WhatsApp with Direct Download Link/Info
+        const msg = `Hello ${name}, Your bill from AAO SAI MOBILE is ready.\nDevice: ${entry.brand} ${entry.model}\nTotal: Rs.${total}\nPaid: Rs.${paid}\nBalance: Rs.${total-paid}\nEMI: Rs.${emiAmt}/Month.`;
+        window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        location.reload();
     };
 
     window.renderLedger = () => {
-        const list = document.getElementById('ledgerList');
-        const search = document.getElementById('ledgerSearch').value.toLowerCase();
-        onValue(ref(db, `shops/${currentStore}/bills`), (snapshot) => {
-            list.innerHTML = "";
-            const data = snapshot.val();
-            if(!data) { list.innerHTML = "No Records Found."; return; }
-            
+        onValue(ref(db, `shops/${currentStore}/bills`), (snap) => {
+            const list = document.getElementById('ledgerList'); list.innerHTML = "";
+            const data = snap.val(); if(!data) return;
             Object.keys(data).reverse().forEach(key => {
-                const i = data[key];
-                const tp = i.payments.reduce((a, b) => a + b.amt, 0), bal = i.total - tp;
-                if(!i.name.toLowerCase().includes(search) && !i.imei.includes(search)) return;
-                if(currentFilter === 'pending' && bal <= 0) return;
-                if(currentFilter === 'paid' && bal > 0) return;
-
-                const div = document.createElement('div');
-                div.className = "card";
-                div.style.borderLeftColor = bal <= 0 ? 'var(--green)' : 'var(--red)';
-                div.onclick = () => openEmi(key, i);
-                div.innerHTML = `<b>${i.name}</b> <span style="float:right">Rs. ${bal}</span><br><small>${i.brand} | ${i.date}</small>`;
-                list.appendChild(div);
+                const i = data[key], tp = i.payments.reduce((a, b) => a + b.amt, 0), bal = i.total - tp;
+                list.innerHTML += `<div onclick="openEmi('${key}', ${JSON.stringify(i).replace(/"/g, '&quot;')})" class="premium-card p-5 flex justify-between items-center shadow-sm">
+                    <div><h4 class="font-bold">${i.name}</h4><p class="text-[10px] font-bold text-slate-400 uppercase">${i.brand} | ${i.date}</p></div>
+                    <div class="text-right"><p class="text-lg font-black ${bal > 0 ? 'text-red-500' : 'text-green-600'}">₹${bal}</p></div>
+                </div>`;
             });
         });
     };
@@ -204,59 +181,43 @@
         activeId = key; window.currentActiveData = data;
         const tp = data.payments.reduce((a, b) => a + b.amt, 0);
         document.getElementById('mName').innerText = data.name;
-        document.getElementById('mHistory').innerText = `Total: ${data.total} | Balance: ${data.total - tp}`;
+        document.getElementById('mHistory').innerText = `Balance Due: ₹${data.total - tp}`;
+        document.getElementById('autoEmiBtn').innerText = `➕ Add EMI (₹${data.emiSetting || 1000})`;
         document.getElementById('emiModal').style.display = 'flex';
     };
 
+    window.addFixedEMI = (amt) => { document.getElementById('addAmt').value = window.currentActiveData.emiSetting || amt; };
+
+    window.sendWhatsAppReminder = () => {
+        const d = window.currentActiveData, tp = d.payments.reduce((a, b) => a + b.amt, 0), bal = d.total - tp;
+        const msg = `EMI Reminder AAO SAI MOBILE: Dear ${d.name}, your EMI of Rs.${d.emiSetting || 1000} is due. Total Balance: Rs.${bal}. Please visit the shop. Thank you!`;
+        window.open(`https://wa.me/91${d.phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    };
+
     window.updatePayment = async () => {
-        const amt = parseFloat(document.getElementById('addAmt').value || 0);
-        const data = window.currentActiveData;
-        data.payments.push({amt, date: new Date().toLocaleString()});
+        const amt = parseFloat(document.getElementById('addAmt').value || 0), data = window.currentActiveData;
+        data.payments.push({amt, date: new Date().toLocaleDateString()});
         await update(ref(db, `shops/${currentStore}/bills/${activeId}`), { payments: data.payments });
         printPDF(data); closeModal();
     };
 
     window.closeModal = () => { document.getElementById('emiModal').style.display = 'none'; };
 
-    function clearForm() {
-        ['cName','cPhone','cAddr','modelName','imeiNo','total','paid'].forEach(id => document.getElementById(id).value = '');
-        document.getElementById('bal').innerText = '0';
-    }
-
-    // PDF GENERATION
     function printPDF(c) {
-        const { jsPDF } = window.jspdf; const docPdf = new jsPDF(); let conf = SHOP_CONFIG[currentStore];
+        const { jsPDF } = window.jspdf; const doc = new jsPDF(); const conf = CONFIG[currentStore];
         const tp = c.payments.reduce((a, b) => a + b.amt, 0), bal = c.total - tp;
-        
-        docPdf.setTextColor(242); docPdf.setFontSize(40); docPdf.text(conf.watermark, 105, 150, {align:'center', angle:45});
-        docPdf.setFillColor(0, 31, 63); docPdf.rect(0, 0, 210, 40, 'F');
-        docPdf.setTextColor(197, 160, 89); docPdf.setFontSize(22); docPdf.text(conf.name, 105, 18, {align:'center'});
-        docPdf.setTextColor(255); docPdf.setFontSize(8); docPdf.text(conf.addr + " | " + conf.contact, 105, 28, {align:'center'});
-        
-        docPdf.setTextColor(0); docPdf.setFontSize(10);
-        docPdf.text(`Bill No: ${c.timestamp || '001'}`, 20, 50); docPdf.text(`Date: ${c.date}`, 140, 50);
-        docPdf.text(`Customer: ${c.name} (${c.phone})`, 20, 60); docPdf.text(`Address: ${c.addr}`, 20, 66);
-        docPdf.text(`Device: ${c.brand} ${c.model || ''}`, 20, 75); docPdf.text(`IMEI: ${c.imei || ''}`, 20, 81);
-        
-        docPdf.rect(20, 90, 170, 35); docPdf.text(`Total Price: Rs. ${c.total}`, 25, 100); docPdf.text(`Paid Amount: Rs. ${tp}`, 25, 110);
-        docPdf.setFontSize(14); docPdf.text(`BALANCE DUE: Rs. ${bal}`, 25, 120);
-
-        let qrBox = document.createElement('div');
-        new QRCode(qrBox, { text: "https://www.instagram.com/"+conf.ig_id, width: 80, height: 80 });
-        setTimeout(() => {
-            let canvas = qrBox.querySelector('canvas');
-            if(canvas) { docPdf.addImage(canvas.toDataURL("image/png"), 'PNG', 20, 230, 30, 30); docPdf.text("Follow @"+conf.ig_id, 20, 265); }
-            docPdf.line(20, 210, 70, 210); docPdf.text("Customer Sign", 25, 215);
-            docPdf.line(140, 210, 190, 210); docPdf.text("Owner Sign", 145, 215);
-            docPdf.save(`${c.name}_Bill.pdf`);
-        }, 500);
+        doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255); doc.setFontSize(22); doc.text(conf.name, 20, 25);
+        doc.setTextColor(0); doc.setFontSize(10);
+        doc.text(`Customer: ${c.name} | Phone: ${c.phone}`, 20, 60);
+        doc.text(`Device: ${c.brand} ${c.model} | IMEI: ${c.imei}`, 20, 70);
+        doc.text(`Total Price: Rs.${c.total} | Total Paid: Rs.${tp}`, 20, 80);
+        doc.setFontSize(14); doc.setTextColor(220, 38, 38);
+        doc.text(`BALANCE DUE: Rs.${bal}`, 20, 95);
+        doc.save(`Bill_${c.name}.pdf`);
     }
 
-    // PWA INSTALL
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
-    window.triggerInstall = async () => { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } else { alert("Go to Chrome Menu > Install App"); } };
-
-    window.onload = () => { if(localStorage.getItem('sairaj_user')) startApp(localStorage.getItem('sairaj_user')); };
+    window.onload = () => { if(localStorage.getItem('aaosai_user')) startApp(localStorage.getItem('aaosai_user')); };
 </script>
 </body>
 </html>
