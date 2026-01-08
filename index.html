@@ -4,100 +4,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
-    <title>AAO SAI MOBILE | Premium Suite</title>
+    <title>AAO SAI MOBILE | Premium suite</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; color: #0f172a; overflow-x: hidden; }
-        .glass-header { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); }
-        .premium-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; transition: 0.3s; }
-        .tab-active { background: #2563eb; color: white; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
-        #loginScreen { background: radial-gradient(circle at top right, #1e293b, #0f172a); }
+        :root { --main: #0f172a; --accent: #2563eb; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.3s; }
+        .dark-mode { background-color: #0f172a; color: white; }
+        .light-mode { background-color: #f8fafc; color: #1e293b; }
+        .premium-card { border-radius: 28px; transition: 0.3s; border: 1px solid rgba(0,0,0,0.05); }
+        .dark-mode .premium-card { background: #1e293b; border-color: #334155; }
+        .light-mode .premium-card { background: #ffffff; }
+        .tab-active { background: #2563eb; color: white; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="no-scrollbar">
+<body class="light-mode no-scrollbar" id="bodyBody">
 
-<div id="loginScreen" class="fixed inset-0 z-[10000] flex items-center justify-center p-6">
-    <div class="w-full max-w-sm bg-white/10 backdrop-blur-xl p-8 rounded-[32px] border border-white/20 shadow-2xl text-center">
-        <h2 class="text-white text-2xl font-bold mb-2">AAO SAI MOBILE</h2>
-        <p class="text-slate-400 text-sm mb-8">Premium Cloud Billing</p>
-        <input type="text" id="user" placeholder="Shop ID" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl mb-4 text-white outline-none">
-        <input type="password" id="pass" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl mb-8 text-white outline-none">
-        <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-xl">SIGN IN</button>
+<div id="loginScreen" class="fixed inset-0 z-[10000] flex items-center justify-center p-6 bg-[#0f172a]">
+    <div class="w-full max-w-sm bg-white/10 backdrop-blur-xl p-8 rounded-[32px] border border-white/10 text-center shadow-2xl">
+        <img src="https://i.ibb.co/Lhb8Y6H/Whats-App-Image-2026-01-08-at-9-41-51-AM.jpg" class="w-24 h-24 rounded-full mx-auto mb-6 border-4 border-blue-500 shadow-lg">
+        <h2 class="text-white text-2xl font-bold mb-2 uppercase">AAO SAI MOBILE</h2>
+        <input type="text" id="user" placeholder="Shop ID" class="w-full bg-white/5 p-4 rounded-2xl mb-4 text-white outline-none">
+        <input type="password" id="pass" placeholder="Password" class="w-full bg-white/5 p-4 rounded-2xl mb-8 text-white outline-none">
+        <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-xl active:scale-95 transition">SIGN IN</button>
     </div>
 </div>
 
 <div id="mainApp" class="hidden h-screen flex flex-col">
-    <header class="glass-header fixed top-0 w-full p-6 pt-12 text-white flex justify-between items-center z-50 rounded-b-[32px] shadow-2xl">
-        <h1 class="text-lg font-extrabold tracking-tight uppercase">AAO SAI MOBILE</h1>
-        <button onclick="handleLogout()" class="bg-red-500/20 text-red-400 px-4 py-2 rounded-xl text-xs font-bold border border-red-500/30">LOGOUT</button>
+    <header class="fixed top-0 w-full p-6 pt-12 flex justify-between items-center z-50 rounded-b-[32px] shadow-2xl bg-[#0f172a] text-white">
+        <div class="flex items-center gap-3">
+            <img src="https://i.ibb.co/Lhb8Y6H/Whats-App-Image-2026-01-08-at-9-41-51-AM.jpg" class="w-10 h-10 rounded-full border border-blue-500">
+            <div><h1 class="text-lg font-black tracking-tight uppercase">AAO SAI</h1><p id="timer" class="text-[8px] text-blue-400"></p></div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="toggleTheme()" class="bg-white/10 p-2 rounded-xl">🌓</button>
+            <button onclick="handleLogout()" class="bg-red-500/20 text-red-400 px-3 py-2 rounded-xl text-xs font-bold">LOGOUT</button>
+        </div>
     </header>
 
     <main class="flex-1 overflow-y-auto p-4 pt-36 pb-28 no-scrollbar">
         <div id="billingPage" class="space-y-6">
-            <div class="premium-card p-6 shadow-sm space-y-4 border border-blue-100">
-                <input type="text" id="cName" placeholder="Customer Name" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
-                <input type="number" id="cPhone" placeholder="WhatsApp Number" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+            <div class="premium-card p-6 shadow-xl space-y-4">
+                <input type="text" id="cName" placeholder="Customer Name" class="w-full p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl outline-none">
+                <input type="number" id="cPhone" placeholder="WhatsApp Number" class="w-full p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl outline-none">
+                <textarea id="cAddr" placeholder="Rathi Complex Maghe Shop Mangrulpir" class="w-full p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl outline-none"></textarea>
+                
                 <div class="grid grid-cols-2 gap-3">
-                    <select id="brand" class="p-4 bg-slate-50 rounded-2xl font-semibold"><option>Vivo</option><option>Oppo</option><option>Samsung</option><option>iPhone</option></select>
-                    <input type="text" id="modelName" placeholder="Model" class="p-4 bg-slate-50 rounded-2xl outline-none">
+                    <select id="brand" class="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl font-bold">
+                        <option>Vivo</option><option>Oppo</option><option>Samsung</option><option>iPhone</option><option>Motorola</option><option>Realme</option><option>Other (Manual)</option>
+                    </select>
+                    <input type="text" id="modelName" placeholder="Model Name" class="p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl outline-none">
                 </div>
-                <input type="text" id="imeiNo" placeholder="IMEI Number" class="w-full p-4 bg-slate-50 rounded-2xl outline-none">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-900 p-4 rounded-[20px]">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase">Total</p>
-                        <input type="number" id="total" onkeyup="calc()" class="bg-transparent w-full text-white text-xl font-black outline-none" value="0">
+                <input type="text" id="imeiNo" placeholder="IMEI Number" class="w-full p-4 bg-slate-100 dark:bg-slate-800 rounded-2xl outline-none">
+                
+                <div class="bg-blue-500/10 p-4 rounded-3xl border border-blue-500/20">
+                    <p class="text-[10px] font-black uppercase text-blue-500 mb-2">EMI Calculator</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="number" id="total" onkeyup="calc()" placeholder="Total Price" class="p-3 bg-white dark:bg-slate-700 rounded-xl font-bold">
+                        <input type="number" id="paid" onkeyup="calc()" placeholder="Down Payment" class="p-3 bg-white dark:bg-slate-700 rounded-xl font-bold">
                     </div>
-                    <div class="bg-blue-600 p-4 rounded-[20px]">
-                        <p class="text-[10px] text-blue-200 font-bold uppercase">Paid</p>
-                        <input type="number" id="paid" onkeyup="calc()" class="bg-transparent w-full text-white text-xl font-black outline-none" value="0">
-                    </div>
-                </div>
-                <div class="bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-300">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">EMI Setup (Optional)</p>
-                    <div class="flex gap-2">
-                        <input type="number" id="emiAmt" placeholder="EMI Amt (e.g. 1000)" class="flex-1 p-2 bg-white rounded-lg text-sm border">
-                        <input type="number" id="emiMonths" placeholder="Months" class="w-20 p-2 bg-white rounded-lg text-sm border">
+                    <div class="grid grid-cols-2 gap-4 mt-3">
+                        <input type="number" id="emiMonths" placeholder="Months (e.g. 10)" class="p-3 bg-white dark:bg-slate-700 rounded-xl text-sm">
+                        <div class="flex items-center justify-center font-black text-red-500">₹ <span id="bal">0</span></div>
                     </div>
                 </div>
-                <div class="bg-red-50 p-5 rounded-[24px] flex justify-between items-center border border-red-100">
-                    <span class="text-red-600 font-bold">Balance Due</span>
-                    <span class="text-2xl font-black text-red-600">₹<span id="bal">0</span></span>
-                </div>
-                <button onclick="saveBill()" class="w-full bg-blue-600 text-white py-5 rounded-[24px] font-extrabold text-lg shadow-2xl active:scale-95 transition-all">GENERATE & SEND WHATSAPP</button>
+                
+                <button onclick="saveBill()" class="w-full bg-blue-600 text-white py-5 rounded-[28px] font-black text-lg shadow-2xl active:scale-95 transition-all">GENERATE & SEND WHATSAPP</button>
             </div>
         </div>
 
         <div id="ledgerPage" class="hidden space-y-4">
-            <input type="text" id="ledgerSearch" onkeyup="renderLedger()" placeholder="Search Name or IMEI..." class="w-full p-5 rounded-3xl premium-card border-none shadow-md outline-none">
+            <input type="text" id="ledgerSearch" onkeyup="renderLedger()" placeholder="Search Name or IMEI..." class="w-full p-5 rounded-3xl premium-card border-none shadow-md outline-none dark:bg-slate-800">
+            <div class="flex gap-2 p-1 bg-slate-200 dark:bg-slate-700 rounded-2xl">
+                <button onclick="setFilter('all')" id="btnAll" class="flex-1 py-3 rounded-xl text-[10px] font-black uppercase f-btn tab-active">ALL</button>
+                <button onclick="setFilter('pending')" id="btnPending" class="flex-1 py-3 rounded-xl text-[10px] font-black uppercase f-btn">PENDING</button>
+                <button onclick="setFilter('paid')" id="btnPaid" class="flex-1 py-3 rounded-xl text-[10px] font-black uppercase f-btn">SUCCESS</button>
+            </div>
+            <button onclick="downloadMasterReport()" class="w-full bg-slate-900 text-white py-3 rounded-2xl font-bold">📥 DOWNLOAD DAILY BACKUP PDF</button>
             <div id="ledgerList" class="space-y-4"></div>
         </div>
     </main>
 
-    <nav class="fixed bottom-6 left-6 right-6 h-20 glass-header rounded-[32px] flex items-center px-4 shadow-2xl z-50 border border-white/10">
-        <button onclick="tab('billing')" id="t1" class="flex-1 flex flex-col items-center justify-center tab-item tab-active h-14"><span class="text-[10px] font-black uppercase">Billing</span></button>
-        <button onclick="tab('ledger')" id="t2" class="flex-1 flex flex-col items-center justify-center tab-item text-slate-400 h-14"><span class="text-[10px] font-black uppercase">Ledger</span></button>
+    <nav class="fixed bottom-6 left-6 right-6 h-20 bg-[#0f172a] rounded-[32px] flex items-center px-4 shadow-2xl z-50 border border-white/10">
+        <button onclick="tab('billing')" id="t1" class="flex-1 flex flex-col items-center justify-center tab-item tab-active h-14 rounded-2xl transition"><span class="text-[10px] font-black uppercase">Billing</span></button>
+        <button onclick="tab('ledger')" id="t2" class="flex-1 flex flex-col items-center justify-center tab-item text-slate-400 h-14 rounded-2xl transition ml-2"><span class="text-[10px] font-black uppercase">Ledger</span></button>
     </nav>
 </div>
 
-<div id="emiModal" class="hidden fixed inset-0 z-[10001] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-6">
-    <div class="w-full max-w-sm bg-white rounded-[40px] p-8 shadow-2xl">
-        <h3 id="mName" class="text-2xl font-black text-slate-900 mb-1">Update</h3>
+<div id="emiModal" class="hidden fixed inset-0 z-[10001] bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-6">
+    <div class="w-full max-w-sm bg-white dark:bg-slate-800 rounded-[40px] p-8 shadow-2xl border border-white/10">
+        <h3 id="mName" class="text-2xl font-black mb-1">Update Payment</h3>
         <p id="mHistory" class="text-sm text-slate-500 mb-6"></p>
         <div class="flex gap-2 mb-6">
-            <button onclick="window.open('tel:' + window.currentActiveData.phone)" class="flex-1 bg-blue-100 text-blue-600 py-3 rounded-2xl font-bold">📞 CALL</button>
-            <button onclick="sendWhatsAppReminder()" class="flex-1 bg-green-100 text-green-600 py-3 rounded-2xl font-bold">💬 SMS</button>
+            <button onclick="window.open('tel:' + window.currentActiveData.phone)" class="flex-1 bg-blue-500 text-white py-3 rounded-2xl font-bold">📞 CALL</button>
+            <button onclick="sendWhatsAppReminder()" class="flex-1 bg-green-500 text-white py-3 rounded-2xl font-bold">💬 WHATSAPP</button>
         </div>
-        <div class="space-y-4 mb-6">
-            <button onclick="addFixedEMI(1000)" id="autoEmiBtn" class="w-full bg-slate-100 text-slate-700 py-3 rounded-2xl font-bold border border-slate-200">➕ Add Monthly EMI (₹1000)</button>
-            <input type="number" id="addAmt" class="w-full p-4 bg-slate-50 rounded-2xl text-2xl font-black outline-none border" placeholder="Manual Amt">
-        </div>
-        <button onclick="updatePayment()" class="w-full bg-green-600 text-white py-5 rounded-3xl font-extrabold">UPDATE & PRINT PDF</button>
-        <button onclick="closeModal()" class="w-full py-4 text-slate-400 font-bold mt-2">Close</button>
+        <input type="number" id="addAmt" class="w-full p-4 bg-slate-100 dark:bg-slate-700 rounded-2xl mb-4 text-2xl font-black outline-none" placeholder="Manual Rs.">
+        <button onclick="updatePayment()" class="w-full bg-blue-600 text-white py-5 rounded-3xl font-black shadow-lg">UPDATE & PRINT PDF</button>
+        <button onclick="closeModal()" class="w-full py-4 text-slate-400 font-bold mt-2">CLOSE</button>
     </div>
 </div>
 
@@ -118,8 +128,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const CONFIG = { aaosai: { name: "AAO SAI MOBILE", pass: "aaosai7143", addr: "Rathi Complex Maghe Shop Mangrulpir", contact: "9145217143" } };
-    let currentStore = 'aaosai', activeId = null;
+    const CONFIG = { aaosai: { name: "AAO SAI MOBILE", pass: "aaosai7143", addr: "Rathi Complex Maghe Shop Mangrulpir Washim", contact: "9145217143", insta: "aaosaimobile_" } };
+    let currentStore = 'aaosai', activeId = null, currentFilter = 'all';
+
+    window.toggleTheme = () => {
+        const body = document.getElementById('bodyBody');
+        body.classList.toggle('light-mode');
+        body.classList.toggle('dark-mode');
+    };
 
     window.handleLogin = () => {
         let u = document.getElementById('user').value, p = document.getElementById('pass').value;
@@ -131,6 +147,7 @@
     window.startApp = (u) => {
         currentStore = u; document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('mainApp').classList.remove('hidden');
+        setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleString(); }, 1000);
         renderLedger();
     };
 
@@ -142,36 +159,53 @@
         document.getElementById('t2').classList.toggle('tab-active', x=='ledger');
     };
 
+    window.setFilter = (f) => {
+        currentFilter = f;
+        ['btnAll', 'btnPending', 'btnPaid'].forEach(id => document.getElementById(id).classList.remove('tab-active'));
+        document.getElementById('btn' + f.charAt(0).toUpperCase() + f.slice(1)).classList.add('tab-active');
+        renderLedger();
+    };
+
     window.saveBill = async () => {
-        const name = document.getElementById('cName').value, phone = document.getElementById('cPhone').value;
-        const total = parseFloat(document.getElementById('total').value || 0), paid = parseFloat(document.getElementById('paid').value || 0);
-        const emiAmt = document.getElementById('emiAmt').value || 1000;
-        
         const entry = {
-            name, phone, brand: document.getElementById('brand').value, model: document.getElementById('modelName').value,
-            imei: document.getElementById('imeiNo').value, total, emiSetting: emiAmt,
-            payments: [{amt: paid, date: new Date().toLocaleDateString()}],
-            date: new Date().toLocaleDateString(), timestamp: Date.now()
+            name: document.getElementById('cName').value,
+            phone: document.getElementById('cPhone').value,
+            addr: document.getElementById('cAddr').value || CONFIG[currentStore].addr,
+            brand: document.getElementById('brand').value,
+            model: document.getElementById('modelName').value,
+            imei: document.getElementById('imeiNo').value,
+            total: parseFloat(document.getElementById('total').value || 0),
+            payments: [{amt: parseFloat(document.getElementById('paid').value || 0), date: new Date().toLocaleDateString()}],
+            date: new Date().toLocaleDateString(),
+            timestamp: Date.now()
         };
-
-        await set(push(ref(db, `shops/${currentStore}/bills`)), entry);
+        const billRef = push(ref(db, `shops/${currentStore}/bills`));
+        await set(billRef, entry);
         printPDF(entry);
-
-        // WhatsApp with Direct Download Link/Info
-        const msg = `Hello ${name}, Your bill from AAO SAI MOBILE is ready.\nDevice: ${entry.brand} ${entry.model}\nTotal: Rs.${total}\nPaid: Rs.${paid}\nBalance: Rs.${total-paid}\nEMI: Rs.${emiAmt}/Month.`;
-        window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        
+        // WhatsApp with PDF info
+        const msg = `*AAO SAI MOBILE INVOICE*\n------------------\nHello ${entry.name}, Your bill is generated.\nDevice: ${entry.brand} ${entry.model}\nBalance: ₹${entry.total - entry.payments[0].amt}\n------------------\nVisit Again!`;
+        window.open(`https://wa.me/91${entry.phone}?text=${encodeURIComponent(msg)}`, '_blank');
         location.reload();
     };
 
     window.renderLedger = () => {
+        const search = document.getElementById('ledgerSearch').value.toLowerCase();
         onValue(ref(db, `shops/${currentStore}/bills`), (snap) => {
             const list = document.getElementById('ledgerList'); list.innerHTML = "";
             const data = snap.val(); if(!data) return;
             Object.keys(data).reverse().forEach(key => {
                 const i = data[key], tp = i.payments.reduce((a, b) => a + b.amt, 0), bal = i.total - tp;
-                list.innerHTML += `<div onclick="openEmi('${key}', ${JSON.stringify(i).replace(/"/g, '&quot;')})" class="premium-card p-5 flex justify-between items-center shadow-sm">
-                    <div><h4 class="font-bold">${i.name}</h4><p class="text-[10px] font-bold text-slate-400 uppercase">${i.brand} | ${i.date}</p></div>
-                    <div class="text-right"><p class="text-lg font-black ${bal > 0 ? 'text-red-500' : 'text-green-600'}">₹${bal}</p></div>
+                if(!i.name.toLowerCase().includes(search) && !i.imei.includes(search)) return;
+                if(currentFilter === 'pending' && bal <= 0) return;
+                if(currentFilter === 'paid' && bal > 0) return;
+
+                list.innerHTML += `<div onclick="openEmi('${key}', ${JSON.stringify(i).replace(/"/g, '&quot;')})" class="premium-card p-5 flex justify-between items-center shadow-md bg-white dark:bg-slate-800">
+                    <div><h4 class="font-bold">${i.name}</h4><p class="text-[10px] font-black text-slate-400 uppercase">${i.brand} | ${i.date}</p></div>
+                    <div class="text-right">
+                        <p class="text-lg font-black ${bal > 0 ? 'text-red-500' : 'text-green-600'}">₹${bal}</p>
+                        <span class="text-[8px] font-black uppercase px-2 py-1 rounded-full ${bal > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">${bal > 0 ? 'Pending' : 'Success'}</span>
+                    </div>
                 </div>`;
             });
         });
@@ -181,16 +215,13 @@
         activeId = key; window.currentActiveData = data;
         const tp = data.payments.reduce((a, b) => a + b.amt, 0);
         document.getElementById('mName').innerText = data.name;
-        document.getElementById('mHistory').innerText = `Balance Due: ₹${data.total - tp}`;
-        document.getElementById('autoEmiBtn').innerText = `➕ Add EMI (₹${data.emiSetting || 1000})`;
+        document.getElementById('mHistory').innerText = `Total: ₹${data.total} | Balance: ₹${data.total - tp}`;
         document.getElementById('emiModal').style.display = 'flex';
     };
 
-    window.addFixedEMI = (amt) => { document.getElementById('addAmt').value = window.currentActiveData.emiSetting || amt; };
-
     window.sendWhatsAppReminder = () => {
         const d = window.currentActiveData, tp = d.payments.reduce((a, b) => a + b.amt, 0), bal = d.total - tp;
-        const msg = `EMI Reminder AAO SAI MOBILE: Dear ${d.name}, your EMI of Rs.${d.emiSetting || 1000} is due. Total Balance: Rs.${bal}. Please visit the shop. Thank you!`;
+        const msg = `*EMI REMINDER - AAO SAI MOBILE*\nDear ${d.name}, your balance of ₹${bal} is due for ${d.brand} ${d.model}. Please pay at shop.\nAddress: Rathi Complex, Mangrulpir.`;
         window.open(`https://wa.me/91${d.phone}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
@@ -203,18 +234,70 @@
 
     window.closeModal = () => { document.getElementById('emiModal').style.display = 'none'; };
 
+    window.downloadMasterReport = () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(20); doc.text("AAO SAI MOBILE - MASTER BACKUP", 105, 20, {align: 'center'});
+        onValue(ref(db, `shops/${currentStore}/bills`), (snap) => {
+            const data = snap.val();
+            const rows = [];
+            Object.values(data).forEach(i => {
+                const bal = i.total - i.payments.reduce((a,b)=>a+b.amt,0);
+                rows.push([i.date, i.name, i.phone, i.brand + " " + i.model, i.total, bal]);
+            });
+            doc.autoTable({ head: [['Date', 'Name', 'Phone', 'Device', 'Total', 'Balance']], body: rows, startY: 30 });
+            doc.save(`Master_Backup_${new Date().toLocaleDateString()}.pdf`);
+        });
+    };
+
     function printPDF(c) {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF(); const conf = CONFIG[currentStore];
-        const tp = c.payments.reduce((a, b) => a + b.amt, 0), bal = c.total - tp;
-        doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255); doc.setFontSize(22); doc.text(conf.name, 20, 25);
-        doc.setTextColor(0); doc.setFontSize(10);
-        doc.text(`Customer: ${c.name} | Phone: ${c.phone}`, 20, 60);
-        doc.text(`Device: ${c.brand} ${c.model} | IMEI: ${c.imei}`, 20, 70);
-        doc.text(`Total Price: Rs.${c.total} | Total Paid: Rs.${tp}`, 20, 80);
-        doc.setFontSize(14); doc.setTextColor(220, 38, 38);
-        doc.text(`BALANCE DUE: Rs.${bal}`, 20, 95);
-        doc.save(`Bill_${c.name}.pdf`);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const conf = CONFIG[currentStore];
+        const tp = c.payments.reduce((a, b) => a + b.amt, 0);
+        const bal = c.total - tp;
+
+        // Header
+        doc.setFillColor(15, 23, 42); doc.rect(0, 0, 210, 55, 'F');
+        doc.setTextColor(255); doc.setFontSize(30); doc.setFont("helvetica", "bold"); doc.text(conf.name, 20, 30);
+        doc.setFontSize(9); doc.text("Rathi Complex Maghe Shop Mangrulpir Dist. Washim | Contact: +91 " + conf.contact, 20, 42);
+
+        // Watermark
+        doc.setTextColor(245); doc.setFontSize(60); doc.text("AAO SAI MOBILE", 105, 150, {align:'center', angle:45});
+
+        // Details
+        doc.setTextColor(0); doc.setFontSize(10); doc.text("CUSTOMER INVOICE", 20, 70);
+        doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.text(c.name, 20, 80);
+        doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.text("Phone: +91 " + c.phone, 20, 88); doc.text("Date: " + c.date, 150, 70);
+
+        // Table
+        doc.autoTable({
+            startY: 100,
+            head: [['Description', 'IMEI Number', 'Price']],
+            body: [[c.brand + " " + c.model, c.imei || "-", "Rs. " + c.total]],
+            theme: 'striped', headStyles: {fillColor: [37, 99, 235]}
+        });
+
+        // Summary
+        const finalY = doc.previousAutoTable.finalY + 10;
+        doc.setFont("helvetica", "bold"); doc.text("Total Amount:", 130, finalY); doc.text("Rs. " + c.total, 175, finalY);
+        doc.text("Paid Amount:", 130, finalY + 8); doc.text("Rs. " + tp, 175, finalY + 8);
+        doc.setFontSize(14); doc.setTextColor(220, 38, 38); doc.text("BALANCE DUE:", 130, finalY + 18); doc.text("Rs. " + bal, 175, finalY + 18);
+
+        // QR Instagram
+        let qrBox = document.createElement('div');
+        new QRCode(qrBox, { text: "https://www.instagram.com/"+conf.insta, width: 80, height: 80 });
+        setTimeout(() => {
+            let canvas = qrBox.querySelector('canvas');
+            if(canvas) { 
+                doc.addImage(canvas.toDataURL("image/png"), 'PNG', 20, 240, 30, 30); 
+                doc.setTextColor(100); doc.setFontSize(8); doc.text("Scan Instagram: @" + conf.insta, 20, 275);
+            }
+            // Signatures
+            doc.line(20, 220, 70, 220); doc.text("Customer Sign", 30, 225);
+            doc.line(140, 220, 190, 220); doc.text("Owner Sign", 155, 225);
+            doc.save(`Invoice_${c.name}.pdf`);
+        }, 500);
     }
 
     window.onload = () => { if(localStorage.getItem('aaosai_user')) startApp(localStorage.getItem('aaosai_user')); };
